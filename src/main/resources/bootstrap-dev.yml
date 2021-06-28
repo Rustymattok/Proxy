@@ -1,0 +1,36 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+  main:
+    allow-bean-definition-overriding: true
+  application:
+    name: profile
+  cloud:
+    config:
+      enabled: false
+
+  datasource:
+#    url: 'jdbc:postgresql://10.163.20.2:5432/electrohousetest2'
+#    url: 'jdbc:postgresql://10.163.20.2:5432/electrohousetest20210521'
+    url: 'jdbc:postgresql://10.163.20.2:5432/electrohousetest20210405'
+
+    username: postgres
+    password:
+
+eureka:
+  client:
+    enabled: false
+
+
+rest:
+  timeout:
+    connect: 5
+    read: 200
+
+
+security:
+  jwt:
+    secret: 'jdlfkjalkjalsdjasldkjaslkdjasdfsljdladjfsifjlsdjfsldfj1298[8)(*#)$)U#lakdjj)*&$#JLKAjP*#$)P#:JDDFSD(FU)9343kjrlsdkufdspfijs'
+    ttl: 3600000

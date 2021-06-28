@@ -1,0 +1,30 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+  main:
+    allow-bean-definition-overriding: true
+
+  application:
+    name: mycom-proxy
+  cloud:
+    config:
+      name: mycomproxy
+      fail-fast: true
+      uri: http://localhost:8081
+      
+proxy:
+  tracker:
+    url: "http://ru.tracker-api.my.com"
+
+loader:
+  font: "windows-1251"
+  file: "/temp/"
+  megabyte: 1048576
+
+ed:
+  metrics:
+    kafka-address: localhost:9092
+    kafka-topic: test
+    enabled: false
