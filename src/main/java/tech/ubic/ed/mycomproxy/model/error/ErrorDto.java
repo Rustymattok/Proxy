@@ -6,6 +6,6 @@ import lombok.Getter;
 @Builder
 @Getter
 public class ErrorDto {
-    private int code;
-    private String error;
+     int code;
+     String error;
 }

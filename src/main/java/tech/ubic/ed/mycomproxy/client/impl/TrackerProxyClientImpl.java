@@ -1,20 +1,30 @@
 package tech.ubic.ed.mycomproxy.client.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import tech.ubic.ed.metrics.writter.MetricWriter;
 import tech.ubic.ed.mycomproxy.client.TrackerProxyClient;
 import tech.ubic.ed.mycomproxy.exception.BadRequestException;
+import tech.ubic.ed.mycomproxy.metric.EventName;
+import tech.ubic.ed.mycomproxy.metric.MapMetric;
+import tech.ubic.ed.mycomproxy.model.FilterHeader;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -22,36 +32,84 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
     @Value("${proxy.tracker.url}")
     private String urlTracker;
 
-    private final RestTemplate restTemplate;
+    private final MetricWriter metricWriter;
 
-    public TrackerProxyClientImpl(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    public TrackerProxyClientImpl(MetricWriter metricWriter) {
+        this.metricWriter = metricWriter;
     }
 
     @Override
-    public ResponseEntity<String> sendResponse(HttpServletRequest request) {
+    public void proxy(HttpServletResponse response, HttpServletRequest request) {
+        sendRequestMetric(request);
+
         try {
-            String body = IOUtils.toString(request.getReader());
+            CloseableHttpClient client = HttpClients.createDefault();
+
             String realIpAddress = request.getHeader("X-Real-IP");
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("X-Real-IP", realIpAddress);
+            InputStream requestInputStream = request.getInputStream();
+            byte[] body = StreamUtils.copyToByteArray(requestInputStream);
 
-            HttpEntity<?> entity = new HttpEntity<>(body, headers);
+            HttpPost httpPost = new HttpPost(urlTracker);
 
-            ResponseEntity<Object> response = restTemplate.exchange(urlTracker,
-                HttpMethod.valueOf(request.getMethod()),
-                entity,
-                Object.class,
-                request.getParameterMap());
+            httpPost.addHeader("X-Real-IP", realIpAddress);
 
-            return ResponseEntity.status(response.getStatusCode())
-                .body(body);
+            fillHeaders(httpPost, request);
 
-        } catch (HttpClientErrorException | IOException ex) {
+            httpPost.setEntity(new ByteArrayEntity(body));
 
-            throw new BadRequestException("bad request");//сделать свой ексепшн
+            CloseableHttpResponse trackerResponse = client.execute(httpPost);
+
+            responseClient(response, trackerResponse);
+
+            ServletOutputStream out = response.getOutputStream();
+
+            sendResponseMetric(out);
+
+        } catch (HttpClientErrorException ex) {
+            throw new BadRequestException(ex.getMessage());
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            log.info("Common exception");
         }
+    }
+
+    public void responseClient(HttpServletResponse response, CloseableHttpResponse trackerResponse) {
+        if (Objects.nonNull(trackerResponse)) {
+            response.setStatus(trackerResponse.getStatusLine().getStatusCode());
+            //todo добавить контент хедеры и вот это все или просто и зачем это с трекера нужно ?
+        }
+    }
+
+    public void fillHeaders(HttpPost httpPost, HttpServletRequest request) {
+        Enumeration en = request.getHeaderNames();
+        while (en.hasMoreElements()) {
+            String headerName = (String) en.nextElement();
+            String headerValue = request.getHeader(headerName);
+
+            if (!FilterHeader.exceptionHeaders(headerName)) {
+                httpPost.addHeader(headerName, headerValue);
+            }
+        }
+
+    }
+
+    public void sendRequestMetric(HttpServletRequest request) {
+        metricWriter.writeMetric(
+            EventName.REQUEST_TRACKER,
+            "",//todo что в id пихать ?
+            MapMetric.builder().details(MapMetric.putRequest(request)).build(),
+            Arrays.asList("java", "tracker")
+        );
+    }
+
+    public void sendResponseMetric(ServletOutputStream response) {
+        metricWriter.writeMetric(
+            EventName.RESPONSE_TRACKER,
+            "",//todo что в id пихать ?
+            MapMetric.builder().details(MapMetric.putResponse(response)).build(),
+            Arrays.asList("java", "tracker")
+        );
     }
 
 }

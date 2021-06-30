@@ -1,5 +1,6 @@
 package tech.ubic.ed.mycomproxy.config.exception;
 
+import org.apache.http.client.ClientProtocolException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -12,12 +13,24 @@ import tech.ubic.ed.mycomproxy.model.error.ErrorDto;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(BadRequestException.class)
-    protected ResponseEntity<ErrorDto> notFound(BadRequestException ex) {
+    protected ResponseEntity<ErrorDto> badRequest(BadRequestException ex) {
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ErrorDto.builder()
-                .code(HttpStatus.NOT_FOUND.value())
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error(ex.getMessage())
                 .build());
     }
+    
+    @ExceptionHandler(ClientProtocolException.class)
+    protected ResponseEntity<ErrorDto> notFound(BadRequestException ex) {
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+            .body(ErrorDto.builder()
+                .code(HttpStatus.SERVICE_UNAVAILABLE.value())
+                .error(ex.getMessage())
+                .build());
+    }
+    
+    
 }
