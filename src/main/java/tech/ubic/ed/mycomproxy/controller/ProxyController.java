@@ -7,14 +7,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tech.ubic.ed.mycomproxy.client.TrackerProxyClient;
-import tech.ubic.ed.mycomproxy.config.url.ApiUrl;
+import tech.ubic.ed.mycomproxy.exception.BadRequestException;
+import tech.ubic.ed.mycomproxy.model.RequestDto;
+import tech.ubic.ed.mycomproxy.model.ResponseDto;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @RestController
 @Api("Прокси для трекера")
-@RequestMapping(ApiUrl.INTERNAL)
+@RequestMapping("/")
 @Slf4j
 public class ProxyController {
 
@@ -26,10 +29,17 @@ public class ProxyController {
 
 
     @ApiOperation("Прокси метод")
-    @PostMapping("/")
-    public void testMethod(HttpServletResponse response, HttpServletRequest request) {
+    @PostMapping()
+    public void proxy(HttpServletResponse response, HttpServletRequest request) {
 
-        client.proxy(response, request);
+        ResponseDto responseDto = client.proxy(RequestDto.of(request));
+
+        try {
+            response.getWriter().write(responseDto.getBody());
+
+        } catch (IOException ex) {
+            throw new BadRequestException("cant send response for client", ex);
+        }
     }
 
 }

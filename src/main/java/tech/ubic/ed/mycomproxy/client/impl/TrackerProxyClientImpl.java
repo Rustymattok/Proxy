@@ -10,27 +10,31 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import tech.ubic.ed.metrics.writter.MetricWriter;
 import tech.ubic.ed.mycomproxy.client.TrackerProxyClient;
 import tech.ubic.ed.mycomproxy.exception.BadRequestException;
+import tech.ubic.ed.mycomproxy.exception.TrackerException;
 import tech.ubic.ed.mycomproxy.metric.EventName;
 import tech.ubic.ed.mycomproxy.metric.MapMetric;
-import tech.ubic.ed.mycomproxy.model.FilterHeader;
+import tech.ubic.ed.mycomproxy.model.RequestDto;
+import tech.ubic.ed.mycomproxy.model.ResponseDto;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Objects;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @Slf4j
 public class TrackerProxyClientImpl implements TrackerProxyClient {
     @Value("${proxy.tracker.url}")
     private String urlTracker;
+
+    @Value("${proxy.headers}")
+    private List<String> headers;
 
     private final MetricWriter metricWriter;
 
@@ -39,62 +43,60 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
     }
 
     @Override
-    public void proxy(HttpServletResponse response, HttpServletRequest request) {
-        sendRequestMetric(request);
+    public ResponseDto proxy(RequestDto requestDto) {
+        sendRequestMetric(requestDto);
+
+        ResponseDto responseDto = null;
 
         try {
             CloseableHttpClient client = HttpClients.createDefault();
 
-            String realIpAddress = request.getHeader("X-Real-IP");
-
-            InputStream requestInputStream = request.getInputStream();
-            byte[] body = StreamUtils.copyToByteArray(requestInputStream);
+            byte[] body = StreamUtils.copyToByteArray(requestDto.getRequestInputStream());
 
             HttpPost httpPost = new HttpPost(urlTracker);
 
-            httpPost.addHeader("X-Real-IP", realIpAddress);
+            httpPost.addHeader("X-Real-IP", requestDto.getRealIpAddress());
 
-            fillHeaders(httpPost, request);
+            fillHeaders(httpPost, requestDto.getHeaders());
 
             httpPost.setEntity(new ByteArrayEntity(body));
 
             CloseableHttpResponse trackerResponse = client.execute(httpPost);
 
-            responseClient(response, trackerResponse);
+            responseDto = ResponseDto.of(trackerResponse);
 
-            ServletOutputStream out = response.getOutputStream();
-
-            sendResponseMetric(out);
+            sendResponseMetric(responseDto);
 
         } catch (HttpClientErrorException ex) {
             throw new BadRequestException(ex.getMessage());
+        } catch (ResourceAccessException ex) {
+            throw new TrackerException("not available tracker server", ex);
         } catch (IOException ex) {
-            ex.printStackTrace();
-            log.info("Common exception");
+            throw new BadRequestException("internal error with request", ex);
         }
-    }
 
-    public void responseClient(HttpServletResponse response, CloseableHttpResponse trackerResponse) {
-        if (Objects.nonNull(trackerResponse)) {
-            response.setStatus(trackerResponse.getStatusLine().getStatusCode());
-            //todo добавить контент хедеры и вот это все или просто и зачем это с трекера нужно ?
-        }
-    }
-
-    public void fillHeaders(HttpPost httpPost, HttpServletRequest request) {
-        Enumeration en = request.getHeaderNames();
-        while (en.hasMoreElements()) {
-            String headerName = (String) en.nextElement();
-            String headerValue = request.getHeader(headerName);
-
-            if (!FilterHeader.exceptionHeaders(headerName)) {
-                httpPost.addHeader(headerName, headerValue);
-            }
-        }
+        return Optional.ofNullable(responseDto).orElseThrow(() -> new NoSuchElementException("no response from server"));
 
     }
 
-    public void sendRequestMetric(HttpServletRequest request) {
+    public void fillHeaders(HttpPost httpPost, Map<String, String> headers) {
+
+        headers.forEach((key, value) -> addCustomHeader(httpPost, key, value));
+    }
+
+    public void addCustomHeader(HttpPost httpPost, String headerName, String headerValue) {
+
+        if (!exceptionHeaders(headerName, headers)) {
+            httpPost.addHeader(headerName, headerValue);
+        }
+    }
+
+    public Boolean exceptionHeaders(String nameHeader, List<String> nameHeaders) {
+
+        return nameHeaders.contains(nameHeader);
+    }
+
+    public void sendRequestMetric(RequestDto request) {
         metricWriter.writeMetric(
             EventName.REQUEST_TRACKER,
             "",//todo что в id пихать ?
@@ -103,7 +105,7 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
         );
     }
 
-    public void sendResponseMetric(ServletOutputStream response) {
+    public void sendResponseMetric(ResponseDto response) {
         metricWriter.writeMetric(
             EventName.RESPONSE_TRACKER,
             "",//todo что в id пихать ?

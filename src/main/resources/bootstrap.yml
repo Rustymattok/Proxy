@@ -16,7 +16,8 @@ spring:
       
 proxy:
   tracker:
-    url: "http://ru.tracker-api.my.com"
+    url: "https://ru.tracker-api.my.com"
+  headers: host,content-length
 
 loader:
   font: "windows-1251"
