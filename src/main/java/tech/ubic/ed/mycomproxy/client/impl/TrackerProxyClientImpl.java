@@ -57,7 +57,7 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
 
             httpPost.addHeader("X-Real-IP", requestDto.getRealIpAddress());
 
-            fillHeaders(httpPost, requestDto.getHeaders());
+            fillHeaders(httpPost, requestDto.getHeaders(),headers);
 
             httpPost.setEntity(new ByteArrayEntity(body));
 
@@ -76,24 +76,18 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
         }
 
         return Optional.ofNullable(responseDto).orElseThrow(() -> new NoSuchElementException("no response from server"));
-
     }
 
-    public void fillHeaders(HttpPost httpPost, Map<String, String> headers) {
+    public void fillHeaders(HttpPost httpPost, Map<String, String> headers,List<String> nameHeaders) {
 
-        headers.forEach((key, value) -> addCustomHeader(httpPost, key, value));
+        headers.forEach((key, value) -> addCustomHeader(httpPost, key, value,nameHeaders));
     }
 
-    public void addCustomHeader(HttpPost httpPost, String headerName, String headerValue) {
+    public void addCustomHeader(HttpPost httpPost, String headerName, String headerValue,List<String> nameHeaders) {
 
-        if (!exceptionHeaders(headerName, headers)) {
+        if (!nameHeaders.contains(headerName)) {
             httpPost.addHeader(headerName, headerValue);
         }
-    }
-
-    public Boolean exceptionHeaders(String nameHeader, List<String> nameHeaders) {
-
-        return nameHeaders.contains(nameHeader);
     }
 
     public void sendRequestMetric(RequestDto request) {

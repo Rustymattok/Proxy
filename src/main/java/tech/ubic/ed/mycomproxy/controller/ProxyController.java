@@ -33,7 +33,7 @@ public class ProxyController {
     public void proxy(HttpServletResponse response, HttpServletRequest request) {
 
         ResponseDto responseDto = client.proxy(RequestDto.of(request));
-
+  
         try {
             response.getWriter().write(responseDto.getBody());
 
