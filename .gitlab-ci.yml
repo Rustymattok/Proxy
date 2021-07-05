@@ -1,0 +1,71 @@
+image: gitlab.ubic.tech:4567/docker/maven/master
+
+#cache:
+#  paths:
+#    - .m2/
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2"
+#  STAGE_HOST: "sandbox.ubic.tech"
+  STAGE_USER: "gitlabdeploy"
+  DOCKER_DRIVER: overlay
+  REGISTRY_URL: "gitlab.ubic.tech:4567"
+  IMAGE_NAME: $REGISTRY_URL/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME
+
+before_script:
+  - echo $MAVEN_SETTINGS > /settings.xml
+
+stages:
+  - test
+  - build
+  - dockerize_master
+  - dockerize_tag
+
+test:
+  stage: test
+  script:
+    - mvn clean test -B -s /settings.xml
+    
+pmd:
+  stage: test
+  allow_failure: true
+  script:
+    - mvn pmd:pmd -Dformat=txt -s /settings.xml
+    - if [ -f target/pmd.txt ]; then cat target/pmd.txt; mvn pmd:check -Dpmd.failurePriority=2; fi
+
+build:
+  stage: build
+  script:
+    - mvn clean package -B -s /settings.xml
+  artifacts:
+    expire_in: 2 week
+    paths:
+      - target/*.jar
+
+dockerize_master:
+  image: gitlab.ubic.tech:4567/docker/docker:stable
+  services:
+    - name: gitlab.ubic.tech:4567/docker/dind/master
+      alias: docker
+  stage: dockerize_master
+  only:
+    - branches
+  script:
+    - ls -lh
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $REGISTRY_URL
+    - docker build --pull --cache-from $IMAGE_NAME:latest -t $IMAGE_NAME .
+    - docker push $IMAGE_NAME:latest
+
+dockerize_tag:
+  image: gitlab.ubic.tech:4567/docker/docker:stable
+  services:
+    - name: gitlab.ubic.tech:4567/docker/dind/master
+      alias: docker
+  stage: dockerize_tag
+  only:
+    - tags
+  script:
+    - ls -lh
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $REGISTRY_URL
+    - docker build --pull -t $REGISTRY_URL/$CI_PROJECT_PATH:$CI_COMMIT_REF_NAME .
+    - docker push $REGISTRY_URL/$CI_PROJECT_PATH:$CI_COMMIT_REF_NAME
