@@ -1,10 +1,8 @@
 package tech.ubic.ed.mycomproxy.client.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -24,11 +22,10 @@ import tech.ubic.ed.mycomproxy.model.RequestDto;
 import tech.ubic.ed.mycomproxy.model.ResponseDto;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -57,10 +54,14 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
 
             byte[] body = StreamUtils.copyToByteArray(requestDto.getRequestInputStream());
             
+            HttpEnum httpEnum = HttpEnum.valueOf(requestDto.getHttpMethod());
+            
             HttpEntityEnclosingRequestBase httpRequest = Optional.
-                ofNullable(HttpEnum.getHttpMethod(requestDto.getHttpMethod(),urlTracker))
+                ofNullable(httpEnum.getHttpRequest())
                 .orElseThrow(() -> new BadRequestException("not correct request"));
 
+            httpRequest.setURI(URI.create(urlTracker));
+            
             httpRequest.addHeader("X-Real-IP", requestDto.getRealIpAddress());
 
             fillHeaders(httpRequest, requestDto.getHeaders(), headers);
