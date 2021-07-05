@@ -18,7 +18,12 @@ spring:
 
     username: postgres
     password:
-
+      
+proxy:
+  tracker:
+    url: "https://ru.tracker-api.my.com"
+  headers: host,content-length
+  
 eureka:
   client:
     enabled: false

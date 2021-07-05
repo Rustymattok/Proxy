@@ -14,11 +14,6 @@ spring:
       name: mycomproxy
       fail-fast: true
       uri: http://localhost:8081
-      
-proxy:
-  tracker:
-    url: "https://ru.tracker-api.my.com"
-  headers: host,content-length
 
 loader:
   font: "windows-1251"
