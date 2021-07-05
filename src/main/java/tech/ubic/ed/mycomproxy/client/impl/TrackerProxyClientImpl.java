@@ -1,7 +1,9 @@
 package tech.ubic.ed.mycomproxy.client.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -17,6 +19,7 @@ import tech.ubic.ed.mycomproxy.exception.BadRequestException;
 import tech.ubic.ed.mycomproxy.exception.TrackerException;
 import tech.ubic.ed.mycomproxy.metric.EventName;
 import tech.ubic.ed.mycomproxy.metric.MapMetric;
+import tech.ubic.ed.mycomproxy.model.HttpEnum;
 import tech.ubic.ed.mycomproxy.model.RequestDto;
 import tech.ubic.ed.mycomproxy.model.ResponseDto;
 
@@ -25,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -52,41 +56,41 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
             CloseableHttpClient client = HttpClients.createDefault();
 
             byte[] body = StreamUtils.copyToByteArray(requestDto.getRequestInputStream());
+            
+            HttpEntityEnclosingRequestBase httpRequest = Optional.
+                ofNullable(HttpEnum.getHttpMethod(requestDto.getHttpMethod(),urlTracker))
+                .orElseThrow(() -> new BadRequestException("not correct request"));
 
-            HttpPost httpPost = new HttpPost(urlTracker);
+            httpRequest.addHeader("X-Real-IP", requestDto.getRealIpAddress());
 
-            httpPost.addHeader("X-Real-IP", requestDto.getRealIpAddress());
+            fillHeaders(httpRequest, requestDto.getHeaders(), headers);
 
-            fillHeaders(httpPost, requestDto.getHeaders(),headers);
+            httpRequest.setEntity(new ByteArrayEntity(body));
 
-            httpPost.setEntity(new ByteArrayEntity(body));
-
-            CloseableHttpResponse trackerResponse = client.execute(httpPost);
+            CloseableHttpResponse trackerResponse = client.execute(httpRequest);
 
             responseDto = ResponseDto.of(trackerResponse);
 
             sendResponseMetric(responseDto);
 
-        } catch (HttpClientErrorException ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (HttpClientErrorException | IOException ex) {
+            throw new BadRequestException("internal error with request", ex);
         } catch (ResourceAccessException ex) {
             throw new TrackerException("not available tracker server", ex);
-        } catch (IOException ex) {
-            throw new BadRequestException("internal error with request", ex);
         }
-
-        return Optional.ofNullable(responseDto).orElseThrow(() -> new NoSuchElementException("no response from server"));
+        
+        return Optional.ofNullable(responseDto).orElseThrow(() -> new TrackerException("no response from server"));
     }
 
-    public void fillHeaders(HttpPost httpPost, Map<String, String> headers,List<String> nameHeaders) {
+    public void fillHeaders(HttpEntityEnclosingRequestBase httpRequest, Map<String, String> headers, List<String> nameHeaders) {
 
-        headers.forEach((key, value) -> addCustomHeader(httpPost, key, value,nameHeaders));
+        headers.forEach((key, value) -> addCustomHeader(httpRequest, key, value, nameHeaders));
     }
 
-    public void addCustomHeader(HttpPost httpPost, String headerName, String headerValue,List<String> nameHeaders) {
+    public void addCustomHeader(HttpEntityEnclosingRequestBase httpRequest, String headerName, String headerValue, List<String> nameHeaders) {
 
         if (!nameHeaders.contains(headerName)) {
-            httpPost.addHeader(headerName, headerValue);
+            httpRequest.addHeader(headerName, headerValue);
         }
     }
 

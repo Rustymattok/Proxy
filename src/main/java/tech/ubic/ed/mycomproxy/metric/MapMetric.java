@@ -10,6 +10,7 @@ import tech.ubic.ed.mycomproxy.model.ResponseDto;
 import javax.servlet.ServletOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Builder
 @Getter
@@ -19,8 +20,7 @@ public class MapMetric implements MetricPayload {
     
     public static Map<String, Object> putRequest(RequestDto request) {
         Map<String, Object> details = new HashMap<>();
-        String body = request.getBody();
-        details.put("request", body);
+        details.put("request", request.getBody());
         details.put("realIp", request.getRealIpAddress());
 
         return details;
@@ -28,7 +28,9 @@ public class MapMetric implements MetricPayload {
 
     public static Map<String, Object> putResponse(ResponseDto response) {
         Map<String, Object> details = new HashMap<>();
-        details.put("request", response.getBody());
+        if(Objects.nonNull(response)) {
+            details.put("request", response.getBody());
+        }
 
         return details;
     }

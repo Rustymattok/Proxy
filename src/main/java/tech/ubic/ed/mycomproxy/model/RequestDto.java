@@ -3,7 +3,8 @@ package tech.ubic.ed.mycomproxy.model;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
+import org.springframework.util.StreamUtils;
+import tech.ubic.ed.mycomproxy.exception.BadRequestException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -17,30 +18,31 @@ import java.util.Map;
 @Slf4j
 public class RequestDto {
     InputStream requestInputStream;
-    String body;
+    byte[] body;
     String realIpAddress;
     Map<String, String> headers;
+    String httpMethod;
 
     public static RequestDto of(HttpServletRequest request) {
         String realIpAddress = request.getHeader("X-Real-IP");
-        InputStream requestInputStream = null;
-        String body = "";
-
+        RequestDto requestDto = null;
         try {
-            requestInputStream = request.getInputStream();
-            body = IOUtils.toString(requestInputStream);
-        } catch (IOException e) {
-            log.info("request was bad not possible to read ");
+            InputStream requestInputStream = request.getInputStream();
+            byte[] body = StreamUtils.copyToByteArray(requestInputStream);
+            Map<String, String> headers = getMapHeaders(request);
+            String nameMethod = request.getMethod();
+            requestDto = RequestDto.builder()
+                .requestInputStream(requestInputStream)
+                .realIpAddress(realIpAddress)
+                .headers(headers)
+                .body(body)
+                .httpMethod(nameMethod.toUpperCase())
+                .build();
+        } catch (IOException ex) {
+            throw new BadRequestException("cant send request metric to clickhouse", ex);
         }
 
-        Map<String, String> headers = getMapHeaders(request);
-
-        return RequestDto.builder()
-            .requestInputStream(requestInputStream)
-            .realIpAddress(realIpAddress)
-            .headers(headers)
-            .body(body)
-            .build();
+        return requestDto;
     }
 
     protected static Map<String, String> getMapHeaders(HttpServletRequest request) {

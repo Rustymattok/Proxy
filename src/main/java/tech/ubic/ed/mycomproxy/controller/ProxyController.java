@@ -31,11 +31,13 @@ public class ProxyController {
     @ApiOperation("Прокси метод")
     @PostMapping()
     public void proxy(HttpServletResponse response, HttpServletRequest request) {
+        ResponseDto responseDto = null;
 
-        ResponseDto responseDto = client.proxy(RequestDto.of(request));
-  
         try {
-            response.getWriter().write(responseDto.getBody());
+            responseDto = client.proxy(RequestDto.of(request));
+            byte[] byteResponse = responseDto.getBody();
+
+            response.getOutputStream().write(byteResponse);
 
         } catch (IOException ex) {
             throw new BadRequestException("cant send response for client", ex);

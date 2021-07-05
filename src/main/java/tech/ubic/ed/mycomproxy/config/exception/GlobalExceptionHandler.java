@@ -24,7 +24,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(TrackerException.class)
-    protected ResponseEntity<ErrorDto> notAvailable(BadRequestException ex) {
+    protected ResponseEntity<ErrorDto> notAvailable(TrackerException ex) {
 
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
             .body(ErrorDto.builder()
