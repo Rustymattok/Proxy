@@ -6,7 +6,7 @@ image: gitlab.ubic.tech:4567/docker/maven/master
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2"
-#  STAGE_HOST: "sandbox.ubic.tech"
+  STAGE_HOST: "sandbox.ubic.tech"
   STAGE_USER: "gitlabdeploy"
   DOCKER_DRIVER: overlay
   REGISTRY_URL: "gitlab.ubic.tech:4567"
