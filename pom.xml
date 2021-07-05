@@ -110,6 +110,26 @@
             <artifactId>caffeine</artifactId>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>nexus-snapshots</id>
+            <url>https://nexus.ubic.tech/repository/maven-snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+    
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -121,7 +141,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
+    
     <build>
         <plugins>
             <plugin>
