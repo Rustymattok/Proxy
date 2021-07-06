@@ -9,6 +9,6 @@ EXPOSE 8080
 ENV JAVA_OPT=""
 ENV APP_PROP=""
 
-CMD ["/app/mycom-proxy.jar"]
+CMD ["/app/mycomproxy.jar"]
 
-COPY target/mycom-proxy.jar /app/mycom-proxy.jar
+COPY target/mycom-proxy.jar /app/mycomproxy.jar

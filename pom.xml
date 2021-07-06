@@ -148,7 +148,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <finalName>mycom-proxy</finalName>
+                    <finalName>mycomproxy</finalName>
                 </configuration>
             </plugin>
         </plugins>
