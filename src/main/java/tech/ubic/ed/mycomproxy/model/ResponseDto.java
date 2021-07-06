@@ -19,20 +19,24 @@ import static tech.ubic.ed.mycomproxy.utils.CommonUtils.nullsafe;
 @Slf4j
 public class ResponseDto {
     byte[] body;
+    CloseableHttpResponse response;
 
     public static ResponseDto of(CloseableHttpResponse response) {
         HttpEntity entity = response.getEntity();
-        ResponseDto responseDto = null;
+        byte[] body = null;
+        
         try {
             if (Objects.nonNull(entity)) {
-                byte[] body = StreamUtils.copyToByteArray(entity.getContent());
-                responseDto = ResponseDto.builder().body(body).build();
+                body = StreamUtils.copyToByteArray(entity.getContent());
             }
         } catch (IOException ex) {
-            throw new BadRequestException("cant send response metric to clickhouse", ex);
+            log.info("no body response");
         }
 
-        return responseDto;
+        return ResponseDto.builder()
+            .body(body)
+            .response(response)
+            .build();
 
     }
 }
