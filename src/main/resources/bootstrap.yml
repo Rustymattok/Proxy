@@ -1,7 +1,4 @@
 spring:
-  application:
-    name: mycomproxy
-    
   servlet:
     multipart:
       max-file-size: 200MB
@@ -9,28 +6,11 @@ spring:
   main:
     allow-bean-definition-overriding: true
 
-  datasource:
-    url: 'jdbc:postgresql://172.24.66.3:5432/electrohousetest'
-    username: postgres
-    password:
+  application:
+    name: mycomproxy
     
-proxy:
-  tracker:
-    url: "https://ru.tracker-api.my.com"
-  headers: host,content-length
-  
-#ed:
-#  metrics:
-#    kafka-address: localhost:9092
-#    kafka-topic: test
-#    enabled: true
-    
-management:
-  metrics:
-    tags:
-      application: mycomproxy
-    
-rest:
-  timeout:
-    connect: 5
-    read: 200
+  cloud:
+    config:
+      name: mycomproxy
+      fail-fast: true
+      uri: http://localhost:8081

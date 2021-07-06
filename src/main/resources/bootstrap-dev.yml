@@ -5,9 +5,11 @@ spring:
       max-request-size: 200MB
   main:
     allow-bean-definition-overriding: true
-    
   application:
     name: mycomproxy
+  cloud:
+    config:
+      enabled: false
 
   datasource:
 #    url: 'jdbc:postgresql://10.163.20.2:5432/electrohousetest2'
@@ -21,6 +23,12 @@ proxy:
   tracker:
     url: "https://ru.tracker-api.my.com" 
   headers: host,content-length
+  
+ed:
+  metrics:
+    kafka-address: localhost:9092
+    kafka-topic: test
+    enabled: false
 
 rest:  
   timeout:
