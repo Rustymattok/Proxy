@@ -16,9 +16,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(BadRequestException.class)
     protected ResponseEntity<ErrorDto> badRequest(BadRequestException ex) {
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(ErrorDto.builder()
-                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .code(HttpStatus.BAD_REQUEST.value())
                 .error(ex.getMessage())
                 .build());
     }

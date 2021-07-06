@@ -19,7 +19,7 @@ import java.util.Objects;
 
 @RestController
 @Api("Прокси для трекера")
-@RequestMapping("/**")
+@RequestMapping("/")
 @Slf4j
 public class ProxyController {
 
@@ -31,7 +31,7 @@ public class ProxyController {
 
 
     @ApiOperation("Прокси метод")
-    @PostMapping()
+    @RequestMapping("/**")
     public void proxy(HttpServletResponse response, HttpServletRequest request) {
         ResponseDto responseDto = null;
 
