@@ -8,20 +8,14 @@ spring:
 
   application:
     name: mycomproxy
-    
-  cloud:
-    config:
-      name: mycomproxy
-      fail-fast: true
-      uri: http://localhost:8081
-
-loader:
-  font: "windows-1251"
-  file: "/temp/"
-  megabyte: 1048576
 
 ed:
   metrics:
     kafka-address: localhost:9092
     kafka-topic: test
     enabled: false
+    
+rest:
+  timeout:
+    connect: 5
+    read: 200
