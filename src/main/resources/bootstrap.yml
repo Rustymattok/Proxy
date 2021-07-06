@@ -19,16 +19,16 @@ proxy:
     url: "https://ru.tracker-api.my.com"
   headers: host,content-length
   
-ed:
-  metrics:
-    kafka-address: localhost:9092
-    kafka-topic: test
-    enabled: true
-    
-#management:
+#ed:
 #  metrics:
-#    tags:
-#      application: mycomproxy
+#    kafka-address: localhost:9092
+#    kafka-topic: test
+#    enabled: true
+    
+management:
+  metrics:
+    tags:
+      application: mycomproxy
     
 rest:
   timeout:
