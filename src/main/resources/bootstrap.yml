@@ -9,6 +9,10 @@ spring:
   main:
     allow-bean-definition-overriding: true
 
+  datasource:
+    url: 'jdbc:postgresql://172.24.66.3:5432/electrohousetest'
+    username: postgres
+    password:
     
 proxy:
   tracker:
