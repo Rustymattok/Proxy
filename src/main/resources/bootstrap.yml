@@ -23,7 +23,12 @@ ed:
   metrics:
     kafka-address: localhost:9092
     kafka-topic: test
-    enabled: false
+    enabled: true
+    
+#management:
+#  metrics:
+#    tags:
+#      application: mycomproxy
     
 rest:
   timeout:
