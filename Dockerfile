@@ -11,4 +11,4 @@ ENV APP_PROP=""
 
 CMD ["/app/mycomproxy.jar"]
 
-COPY target/mycom-proxy.jar /app/mycomproxy.jar
+COPY target/mycomproxy.jar /app/mycomproxy.jar
