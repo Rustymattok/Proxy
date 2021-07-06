@@ -1,4 +1,7 @@
 spring:
+  application:
+    name: mycomproxy
+    
   servlet:
     multipart:
       max-file-size: 200MB
@@ -6,9 +9,12 @@ spring:
   main:
     allow-bean-definition-overriding: true
 
-  application:
-    name: mycomproxy
-
+    
+proxy:
+  tracker:
+    url: "https://ru.tracker-api.my.com"
+  headers: host,content-length
+  
 ed:
   metrics:
     kafka-address: localhost:9092
