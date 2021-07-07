@@ -27,7 +27,7 @@ public enum HttpEnum {
     GET("GET"){
         @Override
         public HttpEntityEnclosingRequestBase getRequest(String url) {
-            
+            //todo сделать адекватную обработку GET запроса
             return null;
         }
     };

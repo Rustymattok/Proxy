@@ -27,7 +27,6 @@ public class RequestDto {
     String contentType;
 
     public static RequestDto of(HttpServletRequest request) {
-        
         String realIpAddress = request.getHeader("X-Real-IP");
         String agent = request.getHeader("User-Agent");
         String contentType = request.getHeader("content-type");

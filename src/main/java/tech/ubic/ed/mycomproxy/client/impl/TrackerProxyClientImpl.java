@@ -1,10 +1,13 @@
 package tech.ubic.ed.mycomproxy.client.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,9 +55,7 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
 
         try {
             CloseableHttpClient client = HttpClients.createDefault();
-
-            byte[] body = StreamUtils.copyToByteArray(requestDto.getRequestInputStream());
-
+            
             HttpEnum httpEnum = HttpEnum.valueOf(requestDto.getHttpMethod());
 
             HttpEntityEnclosingRequestBase httpRequest = Optional.
@@ -63,7 +64,9 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
 
             fillHeaders(httpRequest, requestDto.getHeaders(), headers);
 
-            httpRequest.setEntity(new ByteArrayEntity(body));
+            HttpEntity entity = new ByteArrayEntity(requestDto.getBody());
+            
+            httpRequest.setEntity(entity);
             
             log.info(String.format("real ip %s REQUEST START", requestDto.getRealIpAddress()));
             log.info(" -------------------- HEADERS ----------------------- ");
