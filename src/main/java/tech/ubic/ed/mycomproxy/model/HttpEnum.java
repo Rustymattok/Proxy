@@ -2,6 +2,7 @@ package tech.ubic.ed.mycomproxy.model;
 
 import lombok.Getter;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 
@@ -20,6 +21,13 @@ public enum HttpEnum {
         @Override
         public HttpEntityEnclosingRequestBase getRequest(String url) {
             return new HttpPut(url);
+        }
+    },
+    
+    GET("GET"){
+        @Override
+        public HttpEntityEnclosingRequestBase getRequest(String url) {
+            return new HttpPost(url);
         }
     };
 
