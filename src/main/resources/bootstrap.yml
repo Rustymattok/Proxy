@@ -14,3 +14,6 @@ spring:
       name: mycomproxy
       fail-fast: true
       uri: http://localhost:8081
+
+logging.level.org.springframework.web: DEBUG
+

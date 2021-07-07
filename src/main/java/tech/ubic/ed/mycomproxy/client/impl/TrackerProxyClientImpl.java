@@ -66,9 +66,7 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
             fillHeaders(httpRequest, requestDto.getHeaders(), headers);
 
             httpRequest.setEntity(new ByteArrayEntity(body));
-
-            httpRequest.addHeader("X-Real-IP", requestDto.getRealIpAddress());
-
+            
             log.info(String.format("real ip %s REQUEST START", requestDto.getRealIpAddress()));
             log.info(" -------------------- HEADERS ----------------------- ");
             for (Header allHeader : httpRequest.getAllHeaders()) {
