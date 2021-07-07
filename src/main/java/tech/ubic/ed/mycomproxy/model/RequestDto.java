@@ -3,6 +3,7 @@ package tech.ubic.ed.mycomproxy.model;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.Header;
 import org.springframework.util.StreamUtils;
 import tech.ubic.ed.mycomproxy.exception.BadRequestException;
 
@@ -23,10 +24,13 @@ public class RequestDto {
     Map<String, String> headers;
     String httpMethod;
     String userAgent;
+    String contentType;
 
     public static RequestDto of(HttpServletRequest request) {
+        
         String realIpAddress = request.getHeader("X-Real-IP");
         String agent = request.getHeader("User-Agent");
+        String contentType = request.getHeader("content-type");
         
         RequestDto requestDto = null;
         try {
@@ -40,6 +44,7 @@ public class RequestDto {
                 .headers(headers)
                 .body(body)
                 .userAgent(agent)
+                .contentType(contentType)
                 .httpMethod(nameMethod.toUpperCase())
                 .build();
         } catch (IOException ex) {

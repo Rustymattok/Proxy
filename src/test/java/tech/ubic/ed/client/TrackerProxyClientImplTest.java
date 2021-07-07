@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import tech.ubic.ed.metrics.writter.MetricWriter;
 import tech.ubic.ed.mycomproxy.client.impl.TrackerProxyClientImpl;
+import tech.ubic.ed.mycomproxy.model.RequestDto;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -20,6 +21,8 @@ public class TrackerProxyClientImplTest {
     private TrackerProxyClientImpl trackerProxyClient;
 
     private List<String> nameHeaders;
+    
+    private RequestDto requestDto;
 
     @Mock
     private MetricWriter metricWriter;

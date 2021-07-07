@@ -22,8 +22,9 @@ spring:
 proxy:
   tracker:
     url: "https://ru.tracker-api.my.com" 
-  headers: host,content-length
-  
+  headers: host,content-length,cookie
+
+
 ed:
   metrics:
     kafka-address: localhost:9092

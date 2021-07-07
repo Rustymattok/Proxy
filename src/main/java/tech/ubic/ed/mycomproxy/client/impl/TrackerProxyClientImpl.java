@@ -54,20 +54,27 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
             CloseableHttpClient client = HttpClients.createDefault();
 
             byte[] body = StreamUtils.copyToByteArray(requestDto.getRequestInputStream());
-            
+
             HttpEnum httpEnum = HttpEnum.valueOf(requestDto.getHttpMethod());
-            
+
             HttpEntityEnclosingRequestBase httpRequest = Optional.
                 ofNullable(httpEnum.getHttpRequest())
                 .orElseThrow(() -> new BadRequestException("not correct request"));
 
             httpRequest.setURI(URI.create(urlTracker));
-            
-            httpRequest.addHeader("X-Real-IP", requestDto.getRealIpAddress());
 
             fillHeaders(httpRequest, requestDto.getHeaders(), headers);
 
             httpRequest.setEntity(new ByteArrayEntity(body));
+
+            httpRequest.addHeader("X-Real-IP", requestDto.getRealIpAddress());
+
+            log.info(String.format("real ip %s REQUEST START", requestDto.getRealIpAddress()));
+            log.info(" -------------------- HEADERS ----------------------- ");
+            for (Header allHeader : httpRequest.getAllHeaders()) {
+                log.info(allHeader.getName() + " " + allHeader.getValue());
+            }
+            log.info(" -------------------- REQUEST END ----------------------- ");
 
             CloseableHttpResponse trackerResponse = client.execute(httpRequest);
 
@@ -80,7 +87,7 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
         } catch (ResourceAccessException ex) {
             throw new TrackerException("not available tracker server", ex);
         }
-        
+
         return Optional.ofNullable(responseDto).orElseThrow(() -> new TrackerException("no response from server"));
     }
 
@@ -94,6 +101,7 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
         if (!nameHeaders.contains(headerName)) {
             httpRequest.addHeader(headerName, headerValue);
         }
+
     }
 
     public void sendRequestMetric(RequestDto request) {
