@@ -58,10 +58,8 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
             HttpEnum httpEnum = HttpEnum.valueOf(requestDto.getHttpMethod());
 
             HttpEntityEnclosingRequestBase httpRequest = Optional.
-                ofNullable(httpEnum.getHttpRequest())
+                ofNullable(httpEnum.getRequest(urlTracker))
                 .orElseThrow(() -> new BadRequestException("not correct request"));
-
-            httpRequest.setURI(URI.create(urlTracker));
 
             fillHeaders(httpRequest, requestDto.getHeaders(), headers);
 
