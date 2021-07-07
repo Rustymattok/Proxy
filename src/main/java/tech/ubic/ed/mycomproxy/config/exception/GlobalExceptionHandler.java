@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import tech.ubic.ed.mycomproxy.exception.BadRequestException;
 import tech.ubic.ed.mycomproxy.exception.TrackerException;
+import tech.ubic.ed.mycomproxy.exception.URICustomException;
 import tech.ubic.ed.mycomproxy.model.error.ErrorDto;
 
 @ControllerAdvice
@@ -39,6 +40,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
             .body(ErrorDto.builder()
                 .code(HttpStatus.SERVICE_UNAVAILABLE.value())
+                .error(ex.getMessage())
+                .build());
+    }
+
+    @ExceptionHandler(URICustomException.class)
+    protected ResponseEntity<ErrorDto> badUri(URICustomException ex) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ErrorDto.builder()
+                .code(HttpStatus.BAD_REQUEST.value())
                 .error(ex.getMessage())
                 .build());
     }

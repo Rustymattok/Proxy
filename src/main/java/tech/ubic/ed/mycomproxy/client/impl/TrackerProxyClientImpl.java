@@ -1,9 +1,11 @@
 package tech.ubic.ed.mycomproxy.client.impl;
 
+import com.sun.jndi.toolkit.url.Uri;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.entity.ByteArrayEntity;
@@ -19,6 +21,7 @@ import tech.ubic.ed.metrics.writter.MetricWriter;
 import tech.ubic.ed.mycomproxy.client.TrackerProxyClient;
 import tech.ubic.ed.mycomproxy.exception.BadRequestException;
 import tech.ubic.ed.mycomproxy.exception.TrackerException;
+import tech.ubic.ed.mycomproxy.exception.URICustomException;
 import tech.ubic.ed.mycomproxy.metric.EventName;
 import tech.ubic.ed.mycomproxy.metric.MapMetric;
 import tech.ubic.ed.mycomproxy.model.HttpEnum;
@@ -27,9 +30,11 @@ import tech.ubic.ed.mycomproxy.model.ResponseDto;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -55,7 +60,7 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
 
         try {
             CloseableHttpClient client = HttpClients.createDefault();
-            
+
             HttpEnum httpEnum = HttpEnum.valueOf(requestDto.getHttpMethod());
 
             HttpEntityEnclosingRequestBase httpRequest = Optional.
@@ -65,9 +70,15 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
             fillHeaders(httpRequest, requestDto.getHeaders(), headers);
 
             HttpEntity entity = new ByteArrayEntity(requestDto.getBody());
-            
+
             httpRequest.setEntity(entity);
+
+            String host = httpRequest.getURI().getHost();
+            String scheme = httpRequest.getURI().getScheme();
             
+            URI uri = new URI(scheme, host, requestDto.getPath(), requestDto.getQuery());
+            httpRequest.setURI(uri);
+
             log.info(String.format("real ip %s REQUEST START", requestDto.getRealIpAddress()));
             log.info(" -------------------- HEADERS ----------------------- ");
             for (Header allHeader : httpRequest.getAllHeaders()) {
@@ -85,6 +96,8 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
             throw new BadRequestException("internal error with request", ex);
         } catch (ResourceAccessException ex) {
             throw new TrackerException("not available tracker server", ex);
+        } catch (URISyntaxException ex) {
+            throw new URICustomException("bad uri created", ex);
         }
 
         return Optional.ofNullable(responseDto).orElseThrow(() -> new TrackerException("no response from server"));

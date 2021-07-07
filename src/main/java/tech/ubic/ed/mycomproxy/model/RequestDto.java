@@ -25,12 +25,16 @@ public class RequestDto {
     String httpMethod;
     String userAgent;
     String contentType;
+    String path;
+    String query;
 
     public static RequestDto of(HttpServletRequest request) {
         String realIpAddress = request.getHeader("X-Real-IP");
         String agent = request.getHeader("User-Agent");
         String contentType = request.getHeader("content-type");
-        
+        String path = request.getServletPath();
+        String query = request.getQueryString();
+
         RequestDto requestDto = null;
         try {
             InputStream requestInputStream = request.getInputStream();
@@ -42,9 +46,11 @@ public class RequestDto {
                 .realIpAddress(realIpAddress)
                 .headers(headers)
                 .body(body)
+                .path(path)
                 .userAgent(agent)
                 .contentType(contentType)
                 .httpMethod(nameMethod.toUpperCase())
+                .query(query)
                 .build();
         } catch (IOException ex) {
             throw new BadRequestException("cant send request metric to clickhouse", ex);
