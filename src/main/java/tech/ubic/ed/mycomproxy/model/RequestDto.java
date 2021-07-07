@@ -22,9 +22,12 @@ public class RequestDto {
     String realIpAddress;
     Map<String, String> headers;
     String httpMethod;
+    String userAgent;
 
     public static RequestDto of(HttpServletRequest request) {
         String realIpAddress = request.getHeader("X-Real-IP");
+        String agent = request.getHeader("User-Agent");
+        
         RequestDto requestDto = null;
         try {
             InputStream requestInputStream = request.getInputStream();
@@ -36,6 +39,7 @@ public class RequestDto {
                 .realIpAddress(realIpAddress)
                 .headers(headers)
                 .body(body)
+                .userAgent(agent)
                 .httpMethod(nameMethod.toUpperCase())
                 .build();
         } catch (IOException ex) {
