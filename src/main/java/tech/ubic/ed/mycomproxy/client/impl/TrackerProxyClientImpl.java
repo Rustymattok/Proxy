@@ -54,7 +54,6 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
 
     @Override
     public ResponseDto proxy(RequestDto requestDto) {
-        sendRequestMetric(requestDto);
 
         ResponseDto responseDto = null;
 
@@ -67,6 +66,8 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
                 ofNullable(httpEnum.getRequest(urlTracker))
                 .orElseThrow(() -> new BadRequestException("not correct request"));
 
+            sendRequestMetric(requestDto); //todo подумать как лучше вставлять метрику,исключая сторнних дятлов.
+            
             fillHeaders(httpRequest, requestDto.getHeaders(), headers);
 
             HttpEntity entity = new ByteArrayEntity(requestDto.getBody());
