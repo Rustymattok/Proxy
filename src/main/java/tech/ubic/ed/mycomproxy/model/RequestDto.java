@@ -49,9 +49,14 @@ public class RequestDto {
             try {
                 log.info("------------- start PROTO --------------");
                 MyTrackerSDKOuterClass.MyTrackerSDK trackerProto = MyTrackerSDKOuterClass.MyTrackerSDK.parseFrom(body);
-                json = ProtoJsonUtil.toJson(trackerProto);
+                log.info("------ Builder was DONE -------");
+                json = JsonFormat.printer().print(trackerProto);
+//                json = ProtoJsonUtil.toJson(trackerProto);
+                log.info("------ JSON TEXT -------");
                 log.info(json);
             } catch (InvalidProtocolBufferException e) {
+                log.info("------------- FAILED PROTO --------------");
+
                 log.info(e.getMessage());
             }
             
