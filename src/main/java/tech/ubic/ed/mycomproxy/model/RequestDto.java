@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StreamUtils;
 import tech.ubic.ed.mycomproxy.TrackerSDK;
 import tech.ubic.ed.mycomproxy.exception.BadRequestException;
+import tech.ubic.ed.mycomproxy.utils.ProtoJsonUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -48,7 +49,10 @@ public class RequestDto {
             JsonFormat.Printer printer = JsonFormat.printer();
             try {
                 log.info("------------- start PROTO --------------");
-                json = printer.print(TrackerSDK.MyTrackerSDK.newBuilder().mergeFrom(body).build());
+
+                TrackerSDK.MyTrackerSDK sdk = TrackerSDK.MyTrackerSDK.parseFrom(body);
+                json = ProtoJsonUtil.toJson(sdk);
+//                json = printer.print(TrackerSDK.MyTrackerSDK.newBuilder().mergeFrom(body).build());
                 log.info(json);
             } catch (InvalidProtocolBufferException e) {
                 log.info(e.getMessage());
