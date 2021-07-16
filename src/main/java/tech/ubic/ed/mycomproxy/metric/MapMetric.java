@@ -31,7 +31,8 @@ public class MapMetric implements MetricPayload {
     public static Map<String, Object> putResponse(ResponseDto response) {
         Map<String, Object> details = new HashMap<>();
         if(Objects.nonNull(response)) {
-            details.put("request", response.getBody());
+            details.put("response", response.getBody());
+            details.put("json" , response.getJson());
         }
 
         return details;
