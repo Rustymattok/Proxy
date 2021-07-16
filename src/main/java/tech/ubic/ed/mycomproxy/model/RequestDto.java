@@ -48,10 +48,10 @@ public class RequestDto {
             JsonFormat.Printer printer = JsonFormat.printer();
             try {
                 log.info("------------- start PROTO --------------");
-                json = printer.print(TrackerSDK.MyTrackerSDK.newBuilder().mergeFrom(requestInputStream).build());
+                json = printer.print(TrackerSDK.MyTrackerSDK.newBuilder().mergeFrom(body).build());
                 log.info(json);
             } catch (InvalidProtocolBufferException e) {
-                e.printStackTrace();
+                log.info(e.getMessage());
             }
 
 //
