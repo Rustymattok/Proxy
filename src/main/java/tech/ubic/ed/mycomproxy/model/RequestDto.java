@@ -1,16 +1,15 @@
 package tech.ubic.ed.mycomproxy.model;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.Header;
 import org.springframework.util.StreamUtils;
 import tech.ubic.ed.mycomproxy.TrackerSDK;
 import tech.ubic.ed.mycomproxy.exception.BadRequestException;
-import tech.ubic.ed.mycomproxy.utils.ProtoJsonUtil;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
@@ -45,9 +44,25 @@ public class RequestDto {
             byte[] body = StreamUtils.copyToByteArray(requestInputStream);
             Map<String, String> headers = getMapHeaders(request);
             String nameMethod = request.getMethod();
+            String json = "";
+            JsonFormat.Printer printer = JsonFormat.printer();
+            try {
+                log.info("------------- start PROTO --------------");
+                json = printer.print(TrackerSDK.MyTrackerSDK.newBuilder().mergeFrom(requestInputStream).build());
+                log.info(json);
+            } catch (InvalidProtocolBufferException e) {
+                e.printStackTrace();
+            }
 
-            TrackerSDK.MyTrackerSDK des = TrackerSDK.MyTrackerSDK.newBuilder().mergeFrom(requestInputStream).build();
-            String json = ProtoJsonUtil.toJson(des);
+//
+//            TrackerSDK.MyTrackerSDK.Builder builder = TrackerSDK.MyTrackerSDK.newBuilder();
+//            TextFormat.merge((Readable) requestInputStream, builder);
+//            TrackerSDK.MyTrackerSDK des = builder.build();;
+////            TrackerSDK.MyTrackerSDK des = TrackerSDK.MyTrackerSDK.newBuilder().mergeFrom(requestInputStream).build();
+//            log.info("--------------------------------------> create log for JSON des");
+//            String json = ProtoJsonUtil.toJson(des);
+
+
             
             requestDto = RequestDto.builder()
                 .requestInputStream(requestInputStream)

@@ -1,10 +1,15 @@
 package tech.ubic.ed.mycomproxy;
 
+import com.google.protobuf.TextFormat;
+
+import com.googlecode.protobuf.format.JsonFormat;
 import lombok.SneakyThrows;
 import org.junit.Test;
 import tech.ubic.ed.mycomproxy.utils.ProtoJsonUtil;
 
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
@@ -19,10 +24,31 @@ public class TestProto {
 //
 //        AddressBookProtos.Person person = AddressBookProtos.Person.newBuilder().mergeFrom(new FileInputStream("")).build();
 //
-//    TrackerSDK.MyTrackerSDK des = TrackerSDK.MyTrackerSDK.newBuilder().mergeFrom(
-//            new FileInputStream("C:\\Projects\\ED\\mycomproxy\\src\\main\\resources\\mytrackersdk.proto")).build();
+//        TrackerSDK.MyTrackerSDK des = null;
+//        try {
+//            FileInputStream fis = new FileInputStream("C:\\Projects\\ED\\mycomproxy\\src\\main\\resources\\test.txt");
 //
-//        String json = ProtoJsonUtil.toJson(des);
+//            InputStreamReader reader = new InputStreamReader(fis, "ASCII");
+//
+//            // Use the normal try/finally for closing reliably
+//         
+//            TrackerSDK.MyTrackerSDK someProto = TrackerSDK.MyTrackerSDK.getDefaultInstance();
+//            
+//            String jsonFormat;
+//            jsonFormat = JsonFormat.printToString(someProto);
+
+//            
+//            TextFormat.merge(reader, TrackerSDK.MyTrackerSDK.newBuilder());
+//
+//            des = TrackerSDK.MyTrackerSDK.newBuilder().pa(reader).build();
+            
+//            String json = ProtoJsonUtil.toJson(des);
+//
+//            System.out.println(json);
+//        } catch (IOException ioException) {
+//            ioException.printStackTrace();
+//        }
+//        
         
         //        deserialized.getPeople(0).
 
