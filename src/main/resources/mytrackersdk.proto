@@ -1,0 +1,533 @@
+syntax = "proto2";
+
+option java_outer_classname = "TrackerSDK";
+
+message MyTrackerSDK {
+  message Event {
+    message KeyValue {// key-value представление параметров
+      optional bytes key = 1;                             // (required) ключ (максимальная длина 255 символов)
+
+      // возможна наличие только одного из value
+      optional bytes string_value = 2;                    // (optional) строковое значение (максимальная длина 255 символов)
+      optional int64 int_value = 3;                       // (optional)
+      optional double double_value = 4;                   // (optional)
+      optional bool bool_value = 5;                       // (optional)
+    }
+
+    message LaunchEvent {// запуск приложения (начало сессий)
+    }
+
+    message CustomEvent {// кастомное событие, определяемое пользователем
+      repeated KeyValue params = 1;                       // набор любых параметров, которые задает разработчик, могут использоваться для доп. фильтра события
+      optional bytes name = 2;                            // (required) название события, задается разработчиком (максимальная длина 255 символов)
+    }
+
+    message InstallEvent {// событие установки приложения
+      message AndroidData{// android специфичные данные
+        optional bytes installer = 1;                     // (optional) TRG-19722: идентификатор стора из которого поставлено приложение
+        optional uint32 preinstall_source = 2;            // (optional) идентификатор источника: 1 - файл myTracker, 2 - файл Appsflyer
+        optional bytes preinstall_data_json = 3;          // (optional) json из файла по ключу bundle приложения
+        optional bytes preinstall_file = 4;               // (optional) путь, по которому был прочитан файл
+      }
+
+      optional uint64 first_install_time = 1;             // (required) таймштамп первой установки приложения, Android 2.3 и выше (нужен потому что текущий инсталл может быть первым апдейтом с SDK myTracker, а не реальным исталлом)
+      optional AndroidData android_data = 2;              // (optional) android данные
+    }
+
+    message UpdateEvent {// апдейт приложения
+      message AndroidData{// android специфичные данные
+        optional bytes installer = 1;                     // (optional) TRG-19722: идентификатор стора из которого поставлено приложение, не отправляется, если отсутствует
+      }
+
+      optional bytes app_version = 1;                     // (required) новая версия приложения
+      optional bytes app_build = 2;                       // (required) новая сборка приложения
+      optional bytes from_app_version = 3;                // (required) старая версия приложения
+      optional bytes from_app_build = 4;                  // (required) старая сборка приложения
+      optional AndroidData android_data = 5;              // (optional) android данные
+    }
+
+    message OldInstallReferrerEvent {// broadcast receiver install referrer Google Play
+      optional bytes referrer = 1;                        // (required) значение referrer (может быть пустой строкой)
+      optional bytes installer = 2;                       // (optional) TRG-19722: идентификатор стора из котрого поставлено приложение
+    }
+
+    message ApiInstallReferrerEvent {// событие https://developer.android.com/google/play/installreferrer
+      optional bytes referrer = 1;                        // (required) значение referrer (может быть пустой строкой)
+      optional bytes installer = 2;                       // (optional) TRG-19722: идентификатор стора из котрого поставлено приложение
+      optional uint64 click_timestamp = 3;                // (required) таймштамп клика в секундах (полный таймштамп, не смещение от timestamp_base)
+      optional uint64 install_timestamp = 4;              // (required) таймштамп начала установки из стора в секундах (полный таймштамп, не смещение от timestamp_base)
+    }
+
+    message IadAttributionEvent {// событие iAd аттрибуции
+      repeated KeyValue details = 1;                      // TRG-22318: параметры аттрибуции iAD
+    }
+
+    message AuthEvent {// событие авторизации пользователя (логин или регистрация)
+      repeated KeyValue params = 1;                       // набор любых параметров, которые задает разработчик, могут использоваться для доп. фильтра события
+      optional bytes custom_user_id = 2;                  // (required) кастомный идентификатор пользователя
+      optional bytes vk_connect_id = 3;                   // (optional) идентификатор пользователя в vk connect
+    }
+
+    message InviteEvent {// событие отправки приглашения
+      repeated KeyValue params = 1;                       // набор любых параметров, которые задает разработчик, могут использоваться для доп. фильтра события
+    }
+
+    message LevelEvent {// событие достижения уровня
+      repeated KeyValue params = 1;                       // набор любых параметров, которые задает разработчик, могут использоваться для доп. фильтра события
+      optional int32 level = 2;                           // (optional) номер уровня
+    }
+
+    message AdEvent {// событие рекламной монетизации
+      optional uint32 network = 1;                        // (required) рекламная сеть, показавшая баннер (1 - Admob, 2 - Mopub)
+      optional bytes revenue = 2;                         // (optional) (money-string) сумма вознаграждения, для события revenue
+      optional bytes currency_code = 3;                   // (optional) идентификатор валюты, в которой указана сумма дохода
+      optional bytes source = 4;                          // (optional) рекламная сеть, из которой пришел баннер
+      optional bytes placement_id = 5;                    // (optional) идентификатор места, где был показан баннер
+      optional bytes ad_id = 6;                           // (optional) идентификатор рекламного объявления
+      optional bytes format = 7;                          // (optional) формат рекламы
+    }
+
+    message DeeplinkEvent {// событие диплинка
+      optional bytes deeplink = 1;                        // (required) значение deeplink или значение параметра mt_deeplink в диплинке
+      optional bytes click_id = 2;                        // (optional) айди клика из параметра mt_click_id в диплинке
+    }
+
+    message PurchaseEvent {
+      message AndroidData {// android специфичные данные
+        optional bytes purchase_data_json = 1;            // (required) Json покупки, полученный от Google Play API (https://developer.android.com/reference/com/android/billingclient/api/Purchase#getOriginalJson())
+        optional bytes data_signature = 2;                // (required) сигнатура покупки (https://developer.android.com/reference/com/android/billingclient/api/Purchase#getsignature)
+        optional bytes sku_details_json = 3;              // (optional) данные о товаре (RB-29142, https://developer.android.com/google/play/billing/billing_reference#getSkuDetails)
+      }
+
+      message IosData {// ios специфичные данные
+        optional bytes product_id = 1;                    // (required) идентификатор продукта
+        optional bytes receipt = 2;                       // (required) чек
+        optional bytes transaction_id = 3;                // (required) идентификатор транзакции
+        optional bytes original_transaction_id = 4;       // (optional) идентификатор исходной транзакции
+
+        optional bytes price = 11;                        // (optional) (money-string) RB-29142 цена в валюте
+        optional bytes introductory_price = 12;           // (optional) (money-string) вводная цена в валюте
+        optional bytes introductory_currency_code = 13;   // (optional) код валюты (ISO 4217) для вводной цены
+        optional uint32 payment_mode = 14;                // (optional) способ оплаты (https://developer.apple.com/documentation/storekit/skproductdiscount/2936874-paymentmode)
+        optional uint64 number_of_periods = 15;           // (optional) число периодов дисконта
+        optional uint32 period_unit = 16;                 // (optional) единица периода (https://developer.apple.com/documentation/storekit/skproduct/periodunit)
+        optional uint64 number_of_units = 17;             // (optional) число единиц в одном периоде (https://developer.apple.com/documentation/storekit/skproductsubscriptionperiod/2936876-numberofunits)
+      }
+
+      repeated KeyValue params = 1;                       // набор любых параметров, которые задает разработчик, могут использоваться для доп. фильтра события
+      optional AndroidData android_data = 2;              // (optional) (Android only) Android данные
+      optional IosData ios_data = 3;                      // (optional) (iOS only) iOS данные
+      optional bytes revenue = 4;                         // (optional) (money-string) доход в валюте (RB-29142)
+      optional bytes currency_code = 5;                   // (optional) код валюты (ISO 4217) (RB-29142)
+    }
+
+    message MiniAppEvent {
+      repeated KeyValue params = 1;                       // набор любых параметров, которые задает разработчик, могут использоваться для доп. фильтра события
+      optional bytes mini_app_id = 2;                     // (required) идентификатор mini-app приложения
+      optional bytes platform_user_id = 3;                // (required) идентификатор пользователя
+      optional bytes query = 4;                           // (optional) (required для mini_app_open) параметры открытия mini-app приложения
+      optional bytes custom_user_id = 5;                  // (optional) custom идентификатор пользователя
+      optional bytes name = 6;                            // (optional) (required для mini_app_custom) название события
+    }
+
+    message LightSensorEvent {
+      //reserved 1 for params
+      optional int64 ml_lux = 2;                            // (required) значение светового потока: (long)(1000*lux)
+    }
+
+    message MagnetometerSensorEvent {
+      //reserved 1 for params
+      optional int64 ml_x = 2;                              // (required) x - значение координаты: (long)(1000*x)
+      optional int64 ml_y = 3;                              // (required) y - значение координаты: (long)(1000*y)
+      optional int64 ml_z = 4;                              // (required) z - значение координаты: (long)(1000*z)
+    }
+
+    message GyroscopeSensorEvent {
+      //reserved 1 for params
+      optional int64 ml_x = 2;                              // (required) x - значение координаты: (long)(1000*x)
+      optional int64 ml_y = 3;                              // (required) y - значение координаты: (long)(1000*y)
+      optional int64 ml_z = 4;                              // (required) z - значение координаты: (long)(1000*z)
+    }
+
+    message PressureSensorEvent {
+      //reserved 1 for params
+      optional int64 ml_millibars = 2;                      // (required) значение давления: (long)(1000*millibars)
+    }
+
+    message ProximitySensorEvent {
+      //reserved 1 for params
+      optional int64 ml_centimeters = 2;                    // (required) расстояние: (long)(1000*centimeters)
+    }
+
+    message AdServicesAttributionEvent
+    {
+      optional bytes token = 1;                             // (optional) AdService attribution токен
+      optional bytes error = 2;                             // (optional) Error message
+      optional int32 error_code = 3;                        // (optional) Error code
+    }
+
+    optional uint32 event_type = 1;                                   // (required) тип события
+    // 0 - unknown. Should never happen
+    // 1 - install
+    // 2 - install_referrer
+    // 3 - launch
+    // 4 - (skipped: использовалось для 'appsinstalled')
+    // 5 - update
+    // 6 - custom event
+    // 7 - login
+    // 8 - registration
+    // 9 - invite
+    // 10 - purchase
+    // 11 - (skipped: использовалось для 'session')
+    // 12 - iad_attribution
+    // 13 - level_achieved
+    // 14 - install_referrer2
+    // 15 - deeplink
+    // 16 - (skipped: использовались для 'beacon')
+    // 17 - ad_impression
+    // 18 - ad_click
+    // 19 - ad_revenue
+    // 20 - mini_app_open
+    // 21 - mini_app_close
+    // 22 - mini_app_login
+    // 23 - mini_app_registration
+    // 24 - mini_app_custom
+    // 25 - light_sensor
+    // 26 - magnetometer_sensor
+    // 27 - gyroscope_sensor
+    // 28 - pressure_sensor
+    // 29 - proximity_sensor
+    // 30 - ad_service_attribution
+
+    repeated int32 timestamp = 2;                                     // таймштампы события
+    optional uint32 timestamps_skipped = 3;                           // (optional) кол-во таймштампов, потерянных из-за переполнения кэша
+
+    optional LaunchEvent launch = 11;                                 // (optional) данные launch-события (резерв на будущее)
+    optional InstallEvent install = 12;                               // (optional) данные install-события
+    optional OldInstallReferrerEvent old_install_referrer = 13;       // (optional) (Android only) данные события old-install-referrer
+    optional ApiInstallReferrerEvent api_install_referrer = 14;       // (optional) (Android only) данные события api-install-referrer
+    optional IadAttributionEvent iad_attribution = 15;                // (optional) (iOS only) данные события iAd-attribution
+    optional DeeplinkEvent deeplink = 16;                             // (optional) данные события deeplink
+    optional UpdateEvent update = 17;                                 // (optional) данные события update
+    optional AuthEvent login = 18;                                    // (optional) данные события login
+    optional AuthEvent registration = 19;                             // (optional) данные события registration
+    optional InviteEvent invite = 20;                                 // (optional) данные события invite (присутствует, если есть какие-либо данные)
+    optional LevelEvent level = 21;                                   // (optional) данные события level (присутствует, если есть какие-либо данные)
+    optional CustomEvent custom = 22;                                 // (optional) данные события custom-события
+    optional PurchaseEvent purchase = 23;                             // (optional) данные события in-app покупки
+    // 24 - вакантное место для нового типа message
+    optional AdEvent ad_impression = 25;                              // (optional) данные события показа рекламы
+    optional AdEvent ad_click = 26;                                   // (optional) данные события рекламного клика
+    optional AdEvent ad_revenue = 27;                                 // (optional) данные события рекламного вознаграждения
+
+    optional MiniAppEvent mini_app_open = 28;                         // (optional) данные события открытия mimi-app
+    optional MiniAppEvent mini_app_close = 29;                        // (optional) данные события закрытия mini-app
+    optional MiniAppEvent mini_app_login = 30;                        // (optional) данные события логина пользователя mini-app
+    optional MiniAppEvent mini_app_registration = 31;                 // (optional) данные события регистрация пользователя mini-app
+    optional MiniAppEvent mini_app_custom = 32;                       // (optional) данные custom-события mini-app
+
+    optional LightSensorEvent light_sensor = 33;                      // (optional) (Android only )данные люминометра
+    optional MagnetometerSensorEvent magnetometer_sensor = 34;        // (optional) данные компаса
+    optional GyroscopeSensorEvent gyroscope_sensor = 35;              // (optional) данные гироскопа
+    optional PressureSensorEvent pressure_sensor = 36;                // (optional) данные датчика давления
+    optional ProximitySensorEvent proximity_sensor = 37;              // (optional) (Android only) данные датчика приближения
+
+    optional AdServicesAttributionEvent ad_service_attribution = 38;  // (optional) (iOS only) событие с токеном AdService-attribution
+
+  }
+
+  message Session {// сессия пользователя в приложении
+    message Period {// период сессии
+      optional int32 start = 1;                                       // (required) начало сессии (должно совпадать с одним из значений времени события launch)
+      optional int32 end = 2;                                         // (optional) конец сессии, может отсутствовать в прерванных сессиях
+    }
+
+    repeated Period period = 1;                                       // периоды сессии (i: 1...n)
+    optional uint32 periods_skipped = 2;                              // (optional) кол-во периодов, потерянных из-за переполнения кэша
+  }
+
+  message Settings {// настройки трекера, отсылаются только отличающиеся от дефолтных, если таковых нет объект отсутствует
+    optional uint32 session_timeout = 1;              // (optional) таймаут между сессиями, 30-7200 секунд (default: 30)
+    optional bool location_enabled = 2;               // (optional) включен ли трекинг местоположения (default: true)
+    optional bool environment_enabled = 3;            // (optional) включен ли трекинг информации об окружении (default: true)
+    optional bool launch_enabled = 4;                 // (optional) включен ли трекинг запусков (default: true)
+    optional uint32 buffering_period = 5;             // (optional) период буферизации событий 1-86400 (default: 900)
+    optional uint32 forcing_period = 6;               // (optional) период после инсталла/апдейта с незамедлительной (flush) отправкой событий 0-432000 секунд (default: 0)
+    optional bool autotracking_purchase_enabled = 7;  // (optional) включен ли автотрекинг покупок (default: true)
+    optional bool preinstall_enabled = 8;             // (optional) (Android only) включен ли трекинг преинсталлов (default: true)
+    optional bool preinstall_thirdparty_enabled = 9;  // (optional) (Android only) включен ли трекинг third-party преинсталлов (default: true)
+    optional bool register_skad_enabled = 10;         // (optional) (iOS only) включен ли автовызов SkAdNetwork.registerAppForAdNetworkAttribution();
+  }
+
+  message MrgsInfo {// МРГС информация, присутствует только, если задано одно из значений
+    optional bytes mrgs_app_id = 1;                   // (optional) идентификатор приложения мргс (MRG only)
+    optional bytes mrgs_device_id = 2;                // (optional) идентификатор мргс (MRG only)
+    optional bytes mrgs_user_id = 3;                  // (optional) идентификатор юзера мргс (MRG only)
+  }
+
+  message AppInfo {// информация о приложении, присутствует всегда
+    message IosData {// ios specific данные
+      optional bytes ios_vendor_id = 1;               // (optional) идентификатор издателя приложения, только iOS
+      optional bytes ios_vendor_id_cached = 2;        // (optional) идентификатор издателя приложения закешированный на момент установки, только iOS
+    }
+
+    //reserved 5 to 11;
+
+    optional bytes app_version = 1;                   // (required) версия приложения
+    optional bytes app_build = 2;                     // (required) сборка приложения
+    optional bytes app_language = 3;                  // (required) язык приложения
+    optional bytes app_bundle = 4;                    // (required) bundle приложения
+
+    optional IosData ios_data = 32;                   // (optional) ios данные
+  }
+
+  message UserInfo {// информация о пользователе, присутствует если задано одно из значений
+    optional uint32 gender = 1;                       // (optional) пол юзера (0 - unknown, 1 - male, 2 - female)
+    optional uint32 age = 2;                          // (optional) возраст юзера (0-infinity)
+    repeated bytes ok_id = 3;                         // идентификаторы юзера в ОК (MRG only)
+    repeated bytes vk_id = 4;                         // идентификаторы юзера в VК (MRG only)
+    repeated bytes email = 5;                         // email-ы юзера
+    repeated bytes icq_id = 6;                        // icq идентификаторы пользователя
+    repeated bytes custom_user_id = 7;                // кастомные идентификатораы юзера
+    repeated bytes phone = 8;                         // телефоны пользователя
+    repeated bytes vk_connect_id = 9;                 // идентификаторы пользователя в vk connect
+  }
+
+  message DeviceInfo {// информация об устройстве
+    message AndroidData {// android specific данные
+      optional bytes android_id = 1;                  // (optional) Android ID
+      optional bytes gaid = 2;                        // (optional) google advertising id
+      optional bool gaid_tracking_enabled = 3;        // (optional) разрешил ли пользователь использовать GAID
+      optional bytes oaid = 4;                        // (optional) huawei open advertising id
+      optional bool oaid_tracking_enabled = 5;        // (optional) разрешил ли пользователь использовать OAID
+    }
+
+    message IosData {// ios specific данные
+      optional bytes idfa = 3;                        // (optional) advertising id
+      optional bool idfa_tracking_enabled = 4;        // (optional) разрешил ли пользователь использовать idfa
+      optional bytes sig = 5;                         // (optional) сигнатура запроса (MOBADS-3308)
+      optional bytes sig2 = 6;                        // (optional) дополнительная сигнатура запроса (MOBADS-3308)
+      optional uint64 att_status = 7;                 // (optional) значение ATTrackingManager.AuthorizationStatus (MOBADS-3316)
+    }
+
+    //reserved 25 to 30;
+
+    optional uint32 os = 1;                           // (required) операционная система (0 - unknown, 1 - other (failed to parse), 2 - iPhone OS, 3 - Android, 4 - Windows Mobile)
+    optional bytes os_version = 2;                    // (required) версия операционной системы
+    optional bytes os_language = 3;                   // (required) язык системы, формат "en" "ru"
+    optional bytes timezone = 4;                      // (required) таймзона (формат GMT+03:00 Europe/Moscow)
+    optional bytes instance_id = 5;                   // (required) UUID V4, генерируется один раз при первом запуске и кэшируется, с версии сдк 2.0
+    optional bytes codename = 6;                      // (required) название устройства по классификации производителя
+    optional bytes euname = 7;                        // (required) название устройства, видимое пользователю
+    optional bytes manufacture = 8;                   // (required) производитель устройства
+    optional bool rooted = 9;                         // (optional) признак jailbreak на иос / root на андроид
+    optional uint32 screen_width = 10;                // (required) ширина экрана устройства в пикселях
+    optional uint32 screen_height = 11;               // (required) высота экрана устройства в пикселях
+    optional uint32 dpi = 12;                         // (required) плотность экрана в точках на дюйм
+    optional float xdpi = 13;                         // (optional) (Android only) плотность экрана в точках на дюйм по горизотали (не всегда корректна, см. RB-11433)
+    optional float ydpi = 14;                         // (optional) (Android only) плотность экрана в точках на дюйм по вертикали (не всегда корректна, см. RB-11433)
+    optional float density = 15;                      // (required) коэффициент масштабирования относительно нормальной плотности пикселей (160 dpi)
+    optional bytes mac = 16;                          // (optional) (Android only) MAC-адрес Wi-Fi адаптера, закешированный при первом получении
+    optional uint32 battery_status = 17;              // (optional) статус заряда батареи (1 - UNKNOWN, 2 - CHARGING, 3 - DISCHARGING, 4 - NOT_CHARGING, 5 - FULL)
+    optional uint32 battery_level = 18;               // (optional) целочисленное значение уровня заряда батареи (0 - 100)
+    optional uint64 memory_total = 19;                // (optional) объём памяти всего в байтах
+    optional uint64 memory_available = 20;            // (optional) свободная память в байтах
+    optional uint64 external_memory_total = 21;       // (optional) (Android only) внешний объём памяти в байтах
+    optional uint64 external_memory_available = 22;   // (optional) (Android only) внешняя свободная память в байтах
+    optional uint32 touchscreen = 23;                 // (optional) (Android only) признак наличия тачскрина
+    optional uint32 ui_mode = 24;                     // (optional) (Android only) ui mode (0 - UNDEFINED, 1 - NORMAL, 2 - DESK, 3 - CAR, 5 - APPLIANCE, 4 - TV, 6 - WATCH, 7 - VR_HEADSET)
+    optional bytes firebase_app_instance_id = 25;     // (optional) firebase instance id
+
+    optional AndroidData android_data = 31;           // (optional) android данные
+    optional IosData ios_data = 32;                   // (optional) ios данные
+  }
+
+  message NetworkInfo {// информация о сети
+    optional uint32 connection = 1;                   // (required) тип соединения (0 - unknown, 1 - other (failed to parse), 2 - mobile, 3 - wifi)
+    optional bytes connection_type = 2;               // (required) тип сети (2G, 3G, LTE и т.д.)
+    optional bytes sim_location = 3;                  // (optional) код страны оператора связи
+    optional bytes operator_id = 4;                   // (optional) айди оператора связи
+    optional bytes operator_name = 5;                 // (optional) название оператора связи
+    optional bytes sim_operator_id = 6;               // (optional) (Android only) айди оператора связи, выдавшего сим-карту (не совпадает с operator_id если пользователь в роуминге)
+    optional bool bluetooth_enabled = 7;              // (optional) (Android only) включен ли bluetooth, 1 - включен, 0 - выключен, отправляется если есть доступ к bluetooth.
+  }
+
+  message LocationInfo {// информация о местоположении
+    optional double latitude = 1;                     // (required) широта
+    optional double longitude = 2;                    // (required) долгота
+    optional double speed = 3;                        // (required) скорость в метрах в секунду
+    optional double accuracy = 4;                     // (required) точность в метрах
+    optional uint64 timestamp = 5;                    // (required) время получения координат
+    optional uint32 provider = 6;                     // (optional) (Android only) провайдур координат (0 - unknown, 1 - other (failed to parse), 2 - gps, 3 - network, 4 - passive, 5 - bssid, 6 - photo gps label, 7 - cell)
+  }
+
+  message WifiInfo {// информация о WiFi соединении
+    optional bytes bssid = 1;                         // (required) bssid
+    optional bytes ssid = 2;                          // (required) ssid
+    optional int32 level = 3;                         // (optional) (Android only) same as rssi
+    optional uint32 wifi_id = 5;                      // (optional) (Android only)
+    optional uint32 link_speed = 6;                   // (optional) (Android only)
+  }
+
+  message CellInfoCdma {
+    optional int32 network_id = 1;            // (optional) network id
+    optional int32 system_id = 2;             // (optional) system id
+    optional int32 base_station_id = 3;       // (optional) base station id
+    optional int32 lat = 4;                   // (optional) latitude
+    optional int32 lon = 5;                   // (optional) longitude
+
+    optional int32 cdma_level = 6;            // (optional) cdma level 0..4
+    optional int32 cdma_dbm = 7;              // (optional) cdma rssi value in dbm
+    optional int32 cdma_ecio = 8;             // (optional) cdma ec/io value in db*10
+
+    optional int32 evdo_level = 9;            // (optional) evdo level 0..4
+    optional int32 evdo_dbm = 10;             // (optional) evdo rssi value in dbm
+    optional int32 evdo_ecio = 11;            // (optional) evdo ec/io value in db*10
+    optional int32 evdo_snr = 12;             // (optional) signal to noise ratio 0..8
+  }
+
+  message CellInfoGsm {
+    optional string mcc = 1;                  // (optional) mcc
+    optional string mnc = 2;                  // (optional) mnc
+
+    optional int32 ci = 3;                    // (optional) cell identity
+    optional int32 lac = 4;                   // (optional) location area code
+    optional int32 arfcn = 5;                 // (optional) absolute rf channel number
+    optional int32 bsic = 6;                  // (optional) base station identity code
+
+    optional int32 level = 7;                 // (optional) level 0..4
+    optional int32 dbm = 8;                   // (optional) rssi in dbm
+    optional int32 asu = 9;                   // (optional) rsrp in asu
+    optional int32 ta = 10;                   // (optional) timing advance value
+  }
+
+  message CellInfoLte {
+    optional string mcc = 1;                  // (optional) mcc
+    optional string mnc = 2;                  // (optional) mnc
+
+    optional int32 ci = 3;                    // (optional) cell identity
+    optional int32 tac = 4;                   // (optional) tracking area code
+    optional int32 arfcn = 5;                 // (optional) absolute rf channel number
+    optional int32 pci = 6;                   // (optional) physical cell identity
+
+    optional int32 level = 7;                 // (optional) level 0..4
+    optional int32 dbm = 8;                   // (optional) rssi in dbm
+    optional int32 asu = 9;                   // (optional) rsrp in asu
+    optional int32 ta = 10;                   // (optional) timing advance value
+  }
+
+  message CellInfoWcdma {
+    optional string mcc = 1;                  // (optional) mcc
+    optional string mnc = 2;                  // (optional) mnc
+
+    optional int32 ci = 3;                    // (optional) cell identity
+    optional int32 lac = 4;                   // (optional) location area code
+    optional int32 arfcn = 5;                 // (optional) absolute rf channel number
+    optional int32 psc = 6;                   // (optional) primary scrambling code
+
+    optional int32 level = 7;                 // (optional) level 0..4
+    optional int32 dbm = 8;                   // (optional) rssi in dbm
+    optional int32 asu = 9;                   // (optional) rsrp in asu
+  }
+
+  message CellInfoTdscdma {
+    optional string mcc = 1;                  // (optional) mcc
+    optional string mnc = 2;                  // (optional) mnc
+
+    optional int32 ci = 3;                    // (optional) cell identity
+    optional int32 lac = 4;                   // (optional) location area code
+    optional int32 arfcn = 5;                 // (optional) absolute rf channel number
+    optional int32 cpi = 6;                   // (optional) cell parameters id
+
+    optional int32 level = 7;                 // (optional) level 0..4
+    optional int32 dbm = 8;                   // (optional) rssi in dbm
+    optional int32 asu = 9;                   // (optional) rsrp in asu
+  }
+
+  message CellInfoNr {
+    optional string mcc = 1;                  // (optional) mcc
+    optional string mnc = 2;                  // (optional) mnc
+
+    optional int64 ci = 3;                    // (optional) cell identity
+    optional int32 tac = 4;                   // (optional) tracking area code
+    optional int32 arfcn = 5;                 // (optional) absolute rf channel number
+    optional int32 pci = 6;                   // (optional) physical cell identity
+
+    optional int32 level = 7;                 // (optional) level 0..4
+    optional int32 dbm = 8;                   // (optional) rssi in dbm
+    optional int32 asu = 9;                   // (optional) rsrp in asu
+  }
+
+  message CellInfo {// информация о сотовой сети
+    optional bytes type = 1;                          // (required) тип ("gsm", "lte", "wcdma", etc)
+
+    optional uint32 level = 6;                        // (required)
+    optional int32 dbm = 7;                           // (required)
+    optional uint32 asu = 8;                          // (required)
+    optional uint32 ta = 9;                           // (optional)
+
+    // gsm params
+    optional uint32 cell_id = 2;                      // (optional)
+    optional uint32 lac = 3;                          // (optional)
+    optional uint32 mcc = 4;                          // (optional)
+    optional uint32 mnc = 5;                          // (optional)
+    optional uint32 rfcn = 10;                        // (optional)
+    optional uint32 bsic = 11;                        // (optional)
+    optional uint32 psc = 12;                         // (optional)
+    optional uint32 tac = 13;                         // (optional)
+
+    // cdma params
+    optional uint32 network_id = 14;                  // (optional)
+    optional uint32 system_id = 15;                   // (optional)
+    optional uint32 base_station_id = 16;             // (optional)
+    optional int32 cdma_lat = 17;                     // (optional)
+    optional int32 cdma_lon = 18;                     // (optional)
+    optional uint32 cdma_level = 19;                  // (optional)
+    optional uint32 evdo_level = 20;                  // (optional)
+    optional int32 cdma_dbm = 21;                     // (optional)
+    optional int32 evdo_dbm = 22;                     // (optional)
+    optional uint32 evdo_ecio = 23;                   // (optional)
+    optional uint32 cdma_ecio = 24;                   // (optional)
+    optional uint32 evdo_snr = 25;                    // (optional)
+  }
+
+  message PackageInfo {// информации о приложении
+    optional bytes bundle = 1;                        // (required) bundle приложения
+    optional uint64 first_install_time = 2;           // (required) таймштамп первой установки приложения
+  }
+
+  //reserved 7 to 13;
+  //reserved 16 to 20;
+  //reserved 32 to 40;
+
+  optional bytes mytracker_version = 1;               // (required) версия myTracker SDK (tag < 15)
+  optional bytes app_id = 2;                          // (required) id приложения выданный в РБ
+  optional uint64 timestamp_base = 3;                 // (required) базовый таймштамп (unixtime в целых секундах от начала эпохи), от которого считаются смещения для событий
+  optional uint64 timestamp_send = 4;                 // (required) таймштамп времени отправки
+  optional uint32 custom_events_skipped = 5;          // (optional) кол-во событий которое было потеряно на клиенте из-за переполнения (кеш хранит N уникальных событий пришедших первыми)
+  optional bytes sha256_hash = 6;                     // (required) SHA256 ключ для MyTrackerSDK message (формируется после создания message и записывается в конец потока байт)
+
+  repeated fixed32 src_ip_chain = 14;                 // added by rcvd.
+  optional fixed32 timestamp = 15;                    // added by rcvd.
+
+  optional AppInfo app_info = 21;                     // (required) информация о приложении
+  optional UserInfo user_info = 22;                   // (optional) информация о пользователе
+  optional DeviceInfo device_info = 23;               // (required) информация об устройстве
+  optional MrgsInfo mrgs_info = 24;                   // (optional) МРГС информация
+  optional NetworkInfo network_info = 25;             // (required) информация о сети
+  optional LocationInfo location_info = 26;           // (optional) информация о местоположении, отправляется если есть доступ
+  optional Settings settings = 27;                    // (optional) объект настроек, присутствует если настроки отличаются от дефолтных
+  optional WifiInfo wifi_current = 28;                // (optional) информация о текущем Wi-Fi соединении
+  repeated WifiInfo wifi_around = 29;                 // (optional) (Android only) информация о доступных Wi-Fi сетях
+  repeated CellInfo cell = 30;                        // (optional) (Android only) (deprecated) информация с сотовых сетях
+  repeated PackageInfo package = 31;                  // (optional) (Android only) информация об установленных приложениях, отправляется только при изменении списка
+  repeated CellInfoCdma cdma_cell = 32;               // (optional) (Android only) информация о cdma сетях
+  repeated CellInfoGsm gsm_cell = 33;                 // (optional) (Android only) информация о gsm сетях
+  repeated CellInfoLte lte_cell = 34;                 // (optional) (Android only) информация о lte сетях
+  repeated CellInfoWcdma wcdma_cell = 35;             // (optional) (Android only) информация о wcdma сетях
+  repeated CellInfoTdscdma tdscdma_cell = 36;         // (optional) (Android only) информация о tdscdma сетях
+  repeated CellInfoNr nr_cell = 37;                   // (optional) (Android only) информация о nr сетях
+
+  repeated Event event = 41;                          // (optional) события
+  repeated Session session = 42;                      // (optional) сессии
+}

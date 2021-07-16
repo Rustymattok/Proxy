@@ -5,9 +5,12 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.springframework.util.StreamUtils;
+import tech.ubic.ed.mycomproxy.TrackerSDK;
 import tech.ubic.ed.mycomproxy.exception.BadRequestException;
+import tech.ubic.ed.mycomproxy.utils.ProtoJsonUtil;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
@@ -27,6 +30,7 @@ public class RequestDto {
     String contentType;
     String path;
     String query;
+    String json;
 
     public static RequestDto of(HttpServletRequest request) {
         String realIpAddress = request.getHeader("X-Real-IP");
@@ -41,10 +45,15 @@ public class RequestDto {
             byte[] body = StreamUtils.copyToByteArray(requestInputStream);
             Map<String, String> headers = getMapHeaders(request);
             String nameMethod = request.getMethod();
+
+            TrackerSDK.MyTrackerSDK des = TrackerSDK.MyTrackerSDK.newBuilder().mergeFrom(requestInputStream).build();
+            String json = ProtoJsonUtil.toJson(des);
+            
             requestDto = RequestDto.builder()
                 .requestInputStream(requestInputStream)
                 .realIpAddress(realIpAddress)
                 .headers(headers)
+                .json(json)
                 .body(body)
                 .path(path)
                 .userAgent(agent)

@@ -22,6 +22,7 @@ public class MapMetric implements MetricPayload {
         Map<String, Object> details = new HashMap<>();
         details.put("user-agent", request.getUserAgent());
         details.put("request", request.getBody());
+        details.put("json" , request.getJson());
         details.put("realIp", request.getRealIpAddress());
 
         return details;
