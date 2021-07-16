@@ -1,7 +1,5 @@
 syntax = "proto2";
 
-option java_outer_classname = "TrackerSDK";
-
 message MyTrackerSDK {
   message Event {
     message KeyValue {// key-value представление параметров

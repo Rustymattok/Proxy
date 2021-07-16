@@ -3,6 +3,7 @@ package tech.ubic.ed.mycomproxy;
 import com.google.protobuf.TextFormat;
 
 import com.googlecode.protobuf.format.JsonFormat;
+import com.sun.demo.jvmti.hprof.Tracker;
 import lombok.SneakyThrows;
 import org.junit.Test;
 import tech.ubic.ed.mycomproxy.utils.ProtoJsonUtil;
@@ -18,6 +19,7 @@ public class TestProto {
     
     @Test
     public void take(){
+        
 //        AddressBookProtos.AddressBook deserialized
 //            = AddressBookProtos.AddressBook.newBuilder()
 //            .mergeFrom(new FileInputStream("filePath")).build();

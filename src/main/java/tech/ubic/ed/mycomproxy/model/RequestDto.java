@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StreamUtils;
-import tech.ubic.ed.mycomproxy.TrackerSDK;
+import tech.ubic.ed.mycomproxy.MyTrackerSDKOuterClass;
 import tech.ubic.ed.mycomproxy.exception.BadRequestException;
 import tech.ubic.ed.mycomproxy.utils.ProtoJsonUtil;
 
@@ -46,27 +46,14 @@ public class RequestDto {
             Map<String, String> headers = getMapHeaders(request);
             String nameMethod = request.getMethod();
             String json = "";
-            JsonFormat.Printer printer = JsonFormat.printer();
             try {
                 log.info("------------- start PROTO --------------");
-
-                TrackerSDK.MyTrackerSDK sdk = TrackerSDK.MyTrackerSDK.parseFrom(body);
-                json = ProtoJsonUtil.toJson(sdk);
-//                json = printer.print(TrackerSDK.MyTrackerSDK.newBuilder().mergeFrom(body).build());
+                MyTrackerSDKOuterClass.MyTrackerSDK trackerProto = MyTrackerSDKOuterClass.MyTrackerSDK.parseFrom(body);
+                json = ProtoJsonUtil.toJson(trackerProto);
                 log.info(json);
             } catch (InvalidProtocolBufferException e) {
                 log.info(e.getMessage());
             }
-
-//
-//            TrackerSDK.MyTrackerSDK.Builder builder = TrackerSDK.MyTrackerSDK.newBuilder();
-//            TextFormat.merge((Readable) requestInputStream, builder);
-//            TrackerSDK.MyTrackerSDK des = builder.build();;
-////            TrackerSDK.MyTrackerSDK des = TrackerSDK.MyTrackerSDK.newBuilder().mergeFrom(requestInputStream).build();
-//            log.info("--------------------------------------> create log for JSON des");
-//            String json = ProtoJsonUtil.toJson(des);
-
-
             
             requestDto = RequestDto.builder()
                 .requestInputStream(requestInputStream)
