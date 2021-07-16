@@ -13,6 +13,7 @@ import tech.ubic.ed.mycomproxy.utils.ProtoJsonUtil;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Base64;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +32,7 @@ public class RequestDto {
     String path;
     String query;
     String json;
+    byte[]  metricBody;
 
     public static RequestDto of(HttpServletRequest request) {
         String realIpAddress = request.getHeader("X-Real-IP");
@@ -43,13 +45,13 @@ public class RequestDto {
         try {
             InputStream requestInputStream = request.getInputStream();
             byte[] body = StreamUtils.copyToByteArray(requestInputStream);
+            byte[] metricBody = Base64.getEncoder().encode(body);
             Map<String, String> headers = getMapHeaders(request);
             String nameMethod = request.getMethod();
             String json = "";
             try {
                 log.info("------------- start PROTO --------------");
-                MyTrackerSDKOuterClass.MyTrackerSDK trackerProto = MyTrackerSDKOuterClass.MyTrackerSDK.parseFrom(body);
-                log.info("------ Builder was DONE -------");
+                MyTrackerSDKOuterClass.MyTrackerSDK trackerProto = MyTrackerSDKOuterClass.MyTrackerSDK.parseFrom(metricBody);
                 json = JsonFormat.printer().print(trackerProto);
 //                json = ProtoJsonUtil.toJson(trackerProto);
                 log.info("------ JSON TEXT -------");
@@ -66,6 +68,7 @@ public class RequestDto {
                 .headers(headers)
                 .json(json)
                 .body(body)
+                .metricBody(metricBody)
                 .path(path)
                 .userAgent(agent)
                 .contentType(contentType)
