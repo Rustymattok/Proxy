@@ -1,21 +1,24 @@
 package tech.ubic.ed.mycomproxy.model;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.util.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StreamUtils;
 import sun.misc.BASE64Decoder;
 import tech.ubic.ed.mycomproxy.exception.BadRequestException;
+import tech.ubic.ed.mycomproxy.exception.NoZipException;
 import tech.ubic.ed.mycomproxy.proto.MyTrackerSDK;
+import tech.ubic.ed.mycomproxy.utils.ProtoJsonUtil;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 @Builder
 @Getter
@@ -43,37 +46,17 @@ public class RequestDto {
         RequestDto requestDto = null;
         try {
             InputStream requestInputStream = request.getInputStream();
-            byte[] metricBody = StreamUtils.copyToByteArray(requestInputStream);
-//            byte[] metricBody = Base64.getEncoder().encode(body);
-            BASE64Decoder decoder = new BASE64Decoder();
-            byte[] body = decoder.decodeBuffer(requestInputStream);
+            byte[] body = StreamUtils.copyToByteArray(requestInputStream);
             Map<String, String> headers = getMapHeaders(request);
             String nameMethod = request.getMethod();
-            String json = "";
-            try {
-                log.info("------------- start PROTO --------------");
-                MyTrackerSDK mailTracker = MyTrackerSDK.parseFrom(requestInputStream);
-//                MyTrackerSDKOuterClass.MyTrackerSDK trackerProto = MyTrackerSDKOuterClass.MyTrackerSDK.parseFrom(decodedBytes);
-                log.info(String.valueOf(mailTracker.getAppInfo().getAppVersion()));
-                log.info(String.valueOf(mailTracker.getEventList().size()));
-                log.info("------ JSON PARSE -------");
-                json = JsonFormat.printer().print(mailTracker);
-//                json = JsonFormat.printer().print(trackerProto);
-//                json = ProtoJsonUtil.toJson(trackerProto);
-                log.info("------ JSON TEXT -------");
-                log.info(json);
-            } catch (InvalidProtocolBufferException e) {
-                log.info("------------- FAILED PROTO --------------");
-
-                log.info(e.getMessage());
-            }
+            String json = getJson(body);
 
             requestDto = RequestDto.builder()
                 .requestInputStream(requestInputStream)
                 .realIpAddress(realIpAddress)
                 .headers(headers)
                 .json(json)
-                .body(metricBody)
+                .body(body)
                 .path(path)
                 .userAgent(agent)
                 .contentType(contentType)
@@ -99,6 +82,39 @@ public class RequestDto {
         }
 
         return headers;
+    }
+
+    protected static String getJson(byte[] body) {
+        String json = "";
+        try {
+            String text = new String(body);
+
+            BASE64Decoder decoder = new BASE64Decoder();
+            byte[] compressed = decoder.decodeBuffer(text);
+
+            if (compressed.length == 0) {
+                throw new IllegalArgumentException("Cannot unzip null or empty bytes");
+            }
+            if (!isZipped(compressed)) {
+                throw new NoZipException("Not in GZIP format");
+            }
+
+            try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(compressed)) {
+                try (GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream)) {
+                    MyTrackerSDK myTrackerSDK = MyTrackerSDK.parseFrom(gzipInputStream);
+                    json = ProtoJsonUtil.toJson(myTrackerSDK);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return json;
+    }
+
+    protected static boolean isZipped(final byte[] compressed) {
+        return (compressed[0] == (byte) (GZIPInputStream.GZIP_MAGIC))
+            && (compressed[1] == (byte) (GZIPInputStream.GZIP_MAGIC >> 8));
     }
 
 

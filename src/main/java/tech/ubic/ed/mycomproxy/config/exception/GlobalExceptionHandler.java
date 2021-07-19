@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import tech.ubic.ed.mycomproxy.exception.BadRequestException;
+import tech.ubic.ed.mycomproxy.exception.NoZipException;
 import tech.ubic.ed.mycomproxy.exception.TrackerException;
 import tech.ubic.ed.mycomproxy.exception.URICustomException;
 import tech.ubic.ed.mycomproxy.model.error.ErrorDto;
@@ -16,6 +17,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(BadRequestException.class)
     protected ResponseEntity<ErrorDto> badRequest(BadRequestException ex) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ErrorDto.builder()
+                .code(HttpStatus.BAD_REQUEST.value())
+                .error(ex.getMessage())
+                .build());
+    }
+
+    @ExceptionHandler(NoZipException.class)
+    protected ResponseEntity<ErrorDto> badZip(NoZipException ex) {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(ErrorDto.builder()
