@@ -4,17 +4,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StreamUtils;
-import sun.misc.BASE64Decoder;
 import tech.ubic.ed.mycomproxy.exception.BadRequestException;
 import tech.ubic.ed.mycomproxy.exception.NoZipException;
 import tech.ubic.ed.mycomproxy.proto.MyTrackerSDK;
 import tech.ubic.ed.mycomproxy.utils.ProtoJsonUtil;
+import org.apache.commons.codec.binary.Base64;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -88,9 +87,8 @@ public class RequestDto {
         String json = "";
         try {
             String text = new String(body);
-
-            BASE64Decoder decoder = new BASE64Decoder();
-            byte[] compressed = decoder.decodeBuffer(text);
+            
+            byte[] compressed = Base64.decodeBase64(text);
 
             if (compressed.length == 0) {
                 throw new IllegalArgumentException("Cannot unzip null or empty bytes");
@@ -103,6 +101,7 @@ public class RequestDto {
                 try (GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream)) {
                     MyTrackerSDK myTrackerSDK = MyTrackerSDK.parseFrom(gzipInputStream);
                     json = ProtoJsonUtil.toJson(myTrackerSDK);
+                    log.info(json);
                 }
             }
         } catch (IOException e) {
