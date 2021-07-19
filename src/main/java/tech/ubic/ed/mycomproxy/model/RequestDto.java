@@ -5,15 +5,13 @@ import com.google.protobuf.util.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StreamUtils;
-import tech.ubic.ed.mycomproxy.MyTrackerSDKOuterClass;
+import sun.misc.BASE64Decoder;
 import tech.ubic.ed.mycomproxy.exception.BadRequestException;
-import tech.ubic.ed.mycomproxy.utils.ProtoJsonUtil;
+import tech.ubic.ed.mycomproxy.proto.MyTrackerSDK;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Base64;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +30,7 @@ public class RequestDto {
     String path;
     String query;
     String json;
-    byte[]  metricBody;
+
 
     public static RequestDto of(HttpServletRequest request) {
         String realIpAddress = request.getHeader("X-Real-IP");
@@ -44,15 +42,21 @@ public class RequestDto {
         RequestDto requestDto = null;
         try {
             InputStream requestInputStream = request.getInputStream();
-            byte[] body = StreamUtils.copyToByteArray(requestInputStream);
-            byte[] metricBody = Base64.getEncoder().encode(body);
+//            byte[] body = StreamUtils.copyToByteArray(requestInputStream);
+//            byte[] metricBody = Base64.getEncoder().encode(body);
+            BASE64Decoder decoder = new BASE64Decoder();
+            byte[] decodedBytes = decoder.decodeBuffer(requestInputStream);
+
             Map<String, String> headers = getMapHeaders(request);
             String nameMethod = request.getMethod();
             String json = "";
             try {
                 log.info("------------- start PROTO --------------");
-                MyTrackerSDKOuterClass.MyTrackerSDK trackerProto = MyTrackerSDKOuterClass.MyTrackerSDK.parseFrom(metricBody);
-                json = JsonFormat.printer().print(trackerProto);
+                MyTrackerSDK mailTracker = MyTrackerSDK.parseFrom(decodedBytes);
+//                MyTrackerSDKOuterClass.MyTrackerSDK trackerProto = MyTrackerSDKOuterClass.MyTrackerSDK.parseFrom(decodedBytes);
+                log.info("------ JSON PARSE -------");
+                json = JsonFormat.printer().print(mailTracker);
+//                json = JsonFormat.printer().print(trackerProto);
 //                json = ProtoJsonUtil.toJson(trackerProto);
                 log.info("------ JSON TEXT -------");
                 log.info(json);
@@ -61,14 +65,13 @@ public class RequestDto {
 
                 log.info(e.getMessage());
             }
-            
+
             requestDto = RequestDto.builder()
                 .requestInputStream(requestInputStream)
                 .realIpAddress(realIpAddress)
                 .headers(headers)
                 .json(json)
-                .body(body)
-                .metricBody(metricBody)
+                .body(decodedBytes)
                 .path(path)
                 .userAgent(agent)
                 .contentType(contentType)

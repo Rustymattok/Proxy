@@ -1,5 +1,9 @@
 syntax = "proto2";
 
+option java_package = "tech.ubic.ed.mycomproxy.proto";
+option java_outer_classname = "MailTracker";
+option java_multiple_files = true;
+
 message MyTrackerSDK {
   message Event {
     message KeyValue {// key-value представление параметров

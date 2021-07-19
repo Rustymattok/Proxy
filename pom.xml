@@ -21,7 +21,7 @@
         <spring-cloud.version>Greenwich.RELEASE</spring-cloud.version>
         <oauth-autoconfig.version>2.1.6.RELEASE</oauth-autoconfig.version>
         <metrics.version>1.2.0-SNAPSHOT</metrics.version>
-        <protobuf.version>3.8.0</protobuf.version>
+        <protobuf.version>3.15.3</protobuf.version>
         <httpclient.version>4.5.9</httpclient.version>
     </properties>
 
@@ -43,12 +43,6 @@
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java-util</artifactId>
             <version>${protobuf.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.googlecode.protobuf-java-format</groupId>
-            <artifactId>protobuf-java-format</artifactId>
-            <version>1.4</version>
         </dependency>
         
         <dependency>

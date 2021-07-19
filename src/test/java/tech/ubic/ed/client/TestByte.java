@@ -1,18 +1,19 @@
 package tech.ubic.ed.client;
 
 import org.junit.Test;
-import tech.ubic.ed.mycomproxy.MyTrackerSDKOuterClass;
+import tech.ubic.ed.mycomproxy.proto.MyTrackerSDK;
+
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 
 public class TestByte {
-    
+
     @Test
-    public void testBean(){
-//        final MyTrackerSDKOuterClass.MyTrackerSDK message
-//            = MyTrackerSDKOuterClass.MyTrackerSDK.newBuilder()
-//            .setAppInfo(album.getTitle())
-//            .addAllArtist(album.getArtists())
-//            .setReleaseYear(album.getReleaseYear())
-//            .addAllSongTitle(album.getSongsTitles())
-//            .build();
+    public void testBean() {
+        MyTrackerSDK myTrackerSDK = MyTrackerSDK.newBuilder()
+            .addEvent(MyTrackerSDK.Event.newBuilder().setEventType(1).build())
+            .build();
+
+        assertThat(myTrackerSDK.getEvent(0).getEventType(), is(1));
     }
 }
