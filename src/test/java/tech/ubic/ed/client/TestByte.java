@@ -28,13 +28,14 @@ public class TestByte {
 
     @Test
     public void testBean() {
-        try {
-            InputStream inputStream = new FileInputStream("C:\\Projects\\ED\\mycomproxy\\src\\main\\resources\\test.bin");
-            File file = new File("C:\\Projects\\ED\\mycomproxy\\src\\main\\resources\\test.bin");
-            byte[] bytes = loadFile(file);
-
-            BASE64Decoder decoder = new BASE64Decoder();
-            byte[] body = decoder.decodeBuffer(inputStream);
+        System.out.println("log");
+//        try {
+//            InputStream inputStream = new FileInputStream("C:\\Projects\\ED\\mycomproxy\\src\\main\\resources\\test.bin");
+//            File file = new File("C:\\Projects\\ED\\mycomproxy\\src\\main\\resources\\test.bin");
+//            byte[] bytes = loadFile(file);
+//
+//            BASE64Decoder decoder = new BASE64Decoder();
+//            byte[] body = decoder.decodeBuffer(inputStream);
 
 
 //            byte[] encoded = Base64.encodeBase64(bytes);
@@ -43,15 +44,15 @@ public class TestByte {
 //            return encodedString;
 //            inputStream.read();
 //            iii.read(buffer, 0, len);
-            MyTrackerSDK myTrackerSDK = MyTrackerSDK.parseFrom(inputStream);
-            System.out.println(myTrackerSDK.getEventList().size());
-            System.out.println(myTrackerSDK.getDeviceInfo());
-            System.out.println(myTrackerSDK.getCellCount());
-            System.out.println(myTrackerSDK.getMrgsInfo());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//            MyTrackerSDK myTrackerSDK = MyTrackerSDK.parseFrom(inputStream);
+//            System.out.println(myTrackerSDK.getEventList().size());
+//            System.out.println(myTrackerSDK.getDeviceInfo());
+//            System.out.println(myTrackerSDK.getCellCount());
+//            System.out.println(myTrackerSDK.getMrgsInfo());
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
 
