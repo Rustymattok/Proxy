@@ -45,14 +45,14 @@ public class RequestDto {
 //            byte[] body = StreamUtils.copyToByteArray(requestInputStream);
 //            byte[] metricBody = Base64.getEncoder().encode(body);
             BASE64Decoder decoder = new BASE64Decoder();
-            byte[] decodedBytes = decoder.decodeBuffer(requestInputStream);
+            byte[] body = decoder.decodeBuffer(requestInputStream);
 
             Map<String, String> headers = getMapHeaders(request);
             String nameMethod = request.getMethod();
             String json = "";
             try {
                 log.info("------------- start PROTO --------------");
-                MyTrackerSDK mailTracker = MyTrackerSDK.parseFrom(decodedBytes);
+                MyTrackerSDK mailTracker = MyTrackerSDK.parseFrom(requestInputStream);
 //                MyTrackerSDKOuterClass.MyTrackerSDK trackerProto = MyTrackerSDKOuterClass.MyTrackerSDK.parseFrom(decodedBytes);
                 log.info("------ JSON PARSE -------");
                 json = JsonFormat.printer().print(mailTracker);
@@ -71,7 +71,7 @@ public class RequestDto {
                 .realIpAddress(realIpAddress)
                 .headers(headers)
                 .json(json)
-                .body(decodedBytes)
+                .body(body)
                 .path(path)
                 .userAgent(agent)
                 .contentType(contentType)
