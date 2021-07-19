@@ -5,6 +5,7 @@ import com.google.protobuf.util.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StreamUtils;
 import sun.misc.BASE64Decoder;
 import tech.ubic.ed.mycomproxy.exception.BadRequestException;
 import tech.ubic.ed.mycomproxy.proto.MyTrackerSDK;
@@ -42,7 +43,7 @@ public class RequestDto {
         RequestDto requestDto = null;
         try {
             InputStream requestInputStream = request.getInputStream();
-//            byte[] body = StreamUtils.copyToByteArray(requestInputStream);
+            byte[] metricBody = StreamUtils.copyToByteArray(requestInputStream);
 //            byte[] metricBody = Base64.getEncoder().encode(body);
             BASE64Decoder decoder = new BASE64Decoder();
             byte[] body = decoder.decodeBuffer(requestInputStream);
@@ -72,7 +73,7 @@ public class RequestDto {
                 .realIpAddress(realIpAddress)
                 .headers(headers)
                 .json(json)
-                .body(body)
+                .body(metricBody)
                 .path(path)
                 .userAgent(agent)
                 .contentType(contentType)
