@@ -91,7 +91,7 @@ public class RequestDto {
             byte[] compressed = Base64.decodeBase64(text);
 
             if (compressed.length == 0) {
-                throw new IllegalArgumentException("Cannot unzip null or empty bytes");
+                throw new NoZipException("Cannot unzip null or empty bytes");
             }
             if (!isZipped(compressed)) {
                 throw new NoZipException("Not in GZIP format");
