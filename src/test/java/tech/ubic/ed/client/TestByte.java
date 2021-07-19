@@ -10,6 +10,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.zip.GZIPInputStream;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -20,11 +22,17 @@ public class TestByte {
     public void testBean() {
         try {
             InputStream inputStream = new FileInputStream("C:\\Projects\\ED\\mycomproxy\\src\\main\\resources\\test.bin");
-            File file = new File("C:\\Projects\\ED\\mycomproxy\\src\\main\\resources\\test.bin");
-//            byte[] bytes = loadFile(file);
-//
+            File file = new File("C:\\Projects\\ED\\mycomproxy\\src\\main\\resources\\test2.bin");
+            byte[] bytes = loadFile(file);
+
+            GZIPInputStream gis = new GZIPInputStream(inputStream);
+//            InputStream inputStream1 = null;
+//            doCopy(inputStream1, gis); // copy and uncompress
+//            InputStream in = GZIPInputStream(inputStream);
+            
+
             BASE64Decoder decoder = new BASE64Decoder();
-            decoder.decodeBuffer(inputStream);
+            byte[] body = decoder.decodeBuffer(gis);
 
             
 //            byte[] encoded = Base64.encodeBase64(bytes);
@@ -33,7 +41,7 @@ public class TestByte {
 //            return encodedString;
 //            inputStream.read();
 //            iii.read(buffer, 0, len);
-                MyTrackerSDK myTrackerSDK = MyTrackerSDK.parseFrom(inputStream);
+                MyTrackerSDK myTrackerSDK = MyTrackerSDK.parseFrom(gis);
                 System.out.println(myTrackerSDK.getEventList().size());
                 System.out.println(myTrackerSDK.getDeviceInfo());
                 System.out.println(myTrackerSDK.getCellCount());
@@ -43,6 +51,17 @@ public class TestByte {
             e.printStackTrace();
         } 
     }
+
+
+    public static void doCopy(InputStream is, OutputStream os) throws Exception {
+        int oneByte;
+        while ((oneByte = is.read()) != -1) {
+            os.write(oneByte);
+        }
+        os.close();
+        is.close();
+    }
+    
 
     private static byte[] loadFile(File file) throws IOException {
         InputStream is = new FileInputStream(file);

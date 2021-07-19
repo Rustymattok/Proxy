@@ -46,7 +46,6 @@ public class RequestDto {
 //            byte[] metricBody = Base64.getEncoder().encode(body);
             BASE64Decoder decoder = new BASE64Decoder();
             byte[] body = decoder.decodeBuffer(requestInputStream);
-
             Map<String, String> headers = getMapHeaders(request);
             String nameMethod = request.getMethod();
             String json = "";
@@ -54,6 +53,8 @@ public class RequestDto {
                 log.info("------------- start PROTO --------------");
                 MyTrackerSDK mailTracker = MyTrackerSDK.parseFrom(requestInputStream);
 //                MyTrackerSDKOuterClass.MyTrackerSDK trackerProto = MyTrackerSDKOuterClass.MyTrackerSDK.parseFrom(decodedBytes);
+                log.info(String.valueOf(mailTracker.getAppInfo().getAppVersion()));
+                log.info(String.valueOf(mailTracker.getEventList().size()));
                 log.info("------ JSON PARSE -------");
                 json = JsonFormat.printer().print(mailTracker);
 //                json = JsonFormat.printer().print(trackerProto);
