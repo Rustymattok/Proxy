@@ -47,17 +47,10 @@ public class RequestDto {
         try {
             InputStream requestInputStream = request.getInputStream();
             byte[] body = StreamUtils.copyToByteArray(requestInputStream);
-            byte[] compressed = Base64.decodeBase64(new String(body,StandardCharsets.UTF_8));
-            log.info("--------------------------------------------------------");
-            log.info(new String(body));
-            log.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-            log.info(new String(compressed));
             
             Map<String, String> headers = getMapHeaders(request);
             String nameMethod = request.getMethod();
             String json = getJson(body);
-            
-     
 
             requestDto = RequestDto.builder()
                 .requestInputStream(requestInputStream)
@@ -95,22 +88,12 @@ public class RequestDto {
     protected static String getJson(byte[] body) {
         String json = "";
         try {
-            String text = new String(body);
-            
-//            byte[] compressed = Base64.decodeBase64(text);
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(body);
             GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream);
             MyTrackerSDK myTrackerSDK = MyTrackerSDK.parseFrom(gzipInputStream);
             json = ProtoJsonUtil.toJson(myTrackerSDK);
             log.info(json);
-//            
-//            try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(compressed)) {
-//                try (GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream)) {
-//                    MyTrackerSDK myTrackerSDK = MyTrackerSDK.parseFrom(gzipInputStream);
-//                    json = ProtoJsonUtil.toJson(myTrackerSDK);
-//                    log.info(json);
-//                }
-//            }
+            
         } catch (IOException e) {
             log.info("Cannot unzip null or empty bytes");
             json = "no data";
