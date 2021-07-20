@@ -18,7 +18,7 @@ import java.util.zip.GZIPInputStream;
 
 
 public class TestByte {
-    @Test 
+    @Test @Ignore
     public void testGZIP() {
         try {
             InputStream inputStream = new FileInputStream("C:\\Projects\\ED\\mycomproxy\\src\\main\\resources\\gzip2.txt");
@@ -57,7 +57,7 @@ public class TestByte {
     
     
     @SneakyThrows
-    @Test
+    @Test @Ignore
     public void testAAA(){
         InputStream inputStream = new FileInputStream("C:\\Projects\\ED\\mycomproxy\\src\\main\\resources\\test2.bin");
         byte[] body = StreamUtils.copyToByteArray(inputStream);
