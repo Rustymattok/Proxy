@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,6 +50,9 @@ public class RequestDto {
             Map<String, String> headers = getMapHeaders(request);
             String nameMethod = request.getMethod();
             String json = getJson(body);
+            
+            log.info("--------------------------------------------------------");
+            log.info(new String(body));
 
             requestDto = RequestDto.builder()
                 .requestInputStream(requestInputStream)
@@ -86,17 +90,22 @@ public class RequestDto {
     protected static String getJson(byte[] body) {
         String json = "";
         try {
-            String text = new String(body);
+            String text = new String(body,StandardCharsets.UTF_8);
             
             byte[] compressed = Base64.decodeBase64(text);
-
-            try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(compressed)) {
-                try (GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream)) {
-                    MyTrackerSDK myTrackerSDK = MyTrackerSDK.parseFrom(gzipInputStream);
-                    json = ProtoJsonUtil.toJson(myTrackerSDK);
-                    log.info(json);
-                }
-            }
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(compressed);
+            GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream);
+            MyTrackerSDK myTrackerSDK = MyTrackerSDK.parseFrom(gzipInputStream);
+            json = ProtoJsonUtil.toJson(myTrackerSDK);
+            log.info(json);
+//            
+//            try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(compressed)) {
+//                try (GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream)) {
+//                    MyTrackerSDK myTrackerSDK = MyTrackerSDK.parseFrom(gzipInputStream);
+//                    json = ProtoJsonUtil.toJson(myTrackerSDK);
+//                    log.info(json);
+//                }
+//            }
         } catch (IOException e) {
             log.info("Cannot unzip null or empty bytes");
             json = "no data";
@@ -111,6 +120,5 @@ public class RequestDto {
         return (compressed[0] == (byte) (GZIPInputStream.GZIP_MAGIC))
             && (compressed[1] == (byte) (GZIPInputStream.GZIP_MAGIC >> 8));
     }
-
-
+    
 }

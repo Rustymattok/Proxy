@@ -16,10 +16,10 @@ import java.util.zip.GZIPInputStream;
 
 
 public class TestByte {
-    @Test @Ignore
+    @Test 
     public void testGZIP() {
         try {
-            InputStream inputStream = new FileInputStream("C:\\Projects\\ED\\mycomproxy\\src\\main\\resources\\gzip.txt");
+            InputStream inputStream = new FileInputStream("C:\\Projects\\ED\\mycomproxy\\src\\main\\resources\\gzip2.txt");
             byte[] body = StreamUtils.copyToByteArray(inputStream);
             String text = new String(body);
             
@@ -37,6 +37,7 @@ public class TestByte {
                 try (GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream)) {
                     MyTrackerSDK myTrackerSDK = MyTrackerSDK.parseFrom(gzipInputStream);
                     String json = ProtoJsonUtil.toJson(myTrackerSDK);
+                    System.out.println(json);
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Failed to unzip content", e);
