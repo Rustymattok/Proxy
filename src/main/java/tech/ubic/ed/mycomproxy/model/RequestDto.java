@@ -90,13 +90,6 @@ public class RequestDto {
             
             byte[] compressed = Base64.decodeBase64(text);
 
-            if (compressed.length == 0) {
-                throw new NoZipException("Cannot unzip null or empty bytes");
-            }
-            if (!isZipped(compressed)) {
-                throw new NoZipException("Not in GZIP format");
-            }
-
             try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(compressed)) {
                 try (GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream)) {
                     MyTrackerSDK myTrackerSDK = MyTrackerSDK.parseFrom(gzipInputStream);
@@ -105,7 +98,10 @@ public class RequestDto {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.info("Cannot unzip null or empty bytes");
+            json = "no data";
+            
+            return json;
         }
 
         return json;
