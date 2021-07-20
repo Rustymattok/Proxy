@@ -1,5 +1,6 @@
 package tech.ubic.ed.client;
 
+import lombok.SneakyThrows;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.util.StreamUtils;
@@ -11,6 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 
@@ -51,6 +53,22 @@ public class TestByte {
     public static boolean isZipped(final byte[] compressed) {
         return (compressed[0] == (byte) (GZIPInputStream.GZIP_MAGIC))
             && (compressed[1] == (byte) (GZIPInputStream.GZIP_MAGIC >> 8));
+    }
+    
+    
+    @SneakyThrows
+    @Test
+    public void testAAA(){
+        InputStream inputStream = new FileInputStream("C:\\Projects\\ED\\mycomproxy\\src\\main\\resources\\test2.bin");
+        byte[] body = StreamUtils.copyToByteArray(inputStream);
+        String text = new String(body);
+        System.out.println(text);
+        String text2 = new String(body, StandardCharsets.UTF_8);
+        System.out.println(text2);
+        BASE64Decoder decoder = new BASE64Decoder();
+        byte[] compressed = decoder.decodeBuffer(text);
+
+        System.out.println(new String(compressed,StandardCharsets.UTF_8));
     }
 
 }
