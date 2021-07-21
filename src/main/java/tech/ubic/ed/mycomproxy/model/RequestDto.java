@@ -5,16 +5,13 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StreamUtils;
 import tech.ubic.ed.mycomproxy.exception.BadRequestException;
-import tech.ubic.ed.mycomproxy.exception.NoZipException;
 import tech.ubic.ed.mycomproxy.proto.MyTrackerSDK;
 import tech.ubic.ed.mycomproxy.utils.ProtoJsonUtil;
-import org.apache.commons.codec.binary.Base64;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,7 +44,7 @@ public class RequestDto {
         try {
             InputStream requestInputStream = request.getInputStream();
             byte[] body = StreamUtils.copyToByteArray(requestInputStream);
-            
+
             Map<String, String> headers = getMapHeaders(request);
             String nameMethod = request.getMethod();
             String json = getJson(body);
@@ -93,11 +90,11 @@ public class RequestDto {
             MyTrackerSDK myTrackerSDK = MyTrackerSDK.parseFrom(gzipInputStream);
             json = ProtoJsonUtil.toJson(myTrackerSDK);
             log.info(json);
-            
+
         } catch (IOException e) {
             log.info("Cannot unzip null or empty bytes");
             json = "no data";
-            
+
             return json;
         }
 
@@ -108,5 +105,5 @@ public class RequestDto {
         return (compressed[0] == (byte) (GZIPInputStream.GZIP_MAGIC))
             && (compressed[1] == (byte) (GZIPInputStream.GZIP_MAGIC >> 8));
     }
-    
+
 }

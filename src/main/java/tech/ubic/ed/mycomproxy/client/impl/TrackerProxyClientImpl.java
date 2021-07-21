@@ -1,20 +1,15 @@
 package tech.ubic.ed.mycomproxy.client.impl;
 
-import com.sun.jndi.toolkit.url.Uri;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import tech.ubic.ed.metrics.writter.MetricWriter;
@@ -34,7 +29,6 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -67,7 +61,7 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
                 .orElseThrow(() -> new BadRequestException("not correct request"));
 
             sendRequestMetric(requestDto); //todo подумать как лучше вставлять метрику,исключая сторнних дятлов.
-            
+
             fillHeaders(httpRequest, requestDto.getHeaders(), headers);
 
             HttpEntity entity = new ByteArrayEntity(requestDto.getBody());
@@ -76,7 +70,7 @@ public class TrackerProxyClientImpl implements TrackerProxyClient {
 
             String host = httpRequest.getURI().getHost();
             String scheme = httpRequest.getURI().getScheme();
-            
+
             URI uri = new URI(scheme, host, requestDto.getPath(), requestDto.getQuery());
             httpRequest.setURI(uri);
 
