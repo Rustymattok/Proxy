@@ -1,6 +1,6 @@
 # Proxy Service
-
+you can swhitch two options for differnet proxy service metrics
 # Mail Tracker
-
+use proto buf for this option
 # Adjust server
-e
+use metric from adjust service 
