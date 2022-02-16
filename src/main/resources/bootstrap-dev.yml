@@ -5,24 +5,15 @@ spring:
       max-request-size: 200MB
   main:
     allow-bean-definition-overriding: true
-  application:
-    name: mycomproxy
   cloud:
     config:
       enabled: false
 
   datasource:
-#    url: 'jdbc:postgresql://10.163.20.2:5432/electrohousetest2'
-#    url: 'jdbc:postgresql://10.163.20.2:5432/electrohousetest20210521'
-    url: 'jdbc:postgresql://10.163.20.2:5432/electrohousetest20210405'
+    url: 'jdbc:postgresql:************'
 
     username: postgres
     password:
-
-proxy:
-  tracker:
-    url: "https://ru.tracker-api.my.com" 
-  headers: host,content-length,cookie
 
 
 ed:

@@ -1,6 +1,6 @@
-# Сервис прокси для трекера
+# Proxy Service
 
-### Перенаправляет данные на трекер
+# Mail Tracker
 
-### Properties
-В разработке
+# Adjust server
+e

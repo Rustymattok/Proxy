@@ -1,4 +1,4 @@
-FROM gitlab.ubic.tech:4567/docker/openjdk-bali/8.0.0.3:latest
+FROM gitlab.ubic.my:4567/docker/openjdk-bali/8.0.0.3:latest
 
 VOLUME /tmp
 

@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: mycomproxy-adjust
+
+proxy:
+  tracker:
+    url: "https://app.adjust.com"
+  headers: host,content-length,cookie

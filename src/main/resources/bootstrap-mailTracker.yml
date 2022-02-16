@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: mycomproxy-mailTracker
+
+proxy:
+  tracker:
+    url: "https://**********"
+  headers: host,content-length,cookie

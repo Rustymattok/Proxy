@@ -27,12 +27,6 @@
     </properties>
 
     <dependencies>
-        
-        <dependency>
-            <groupId>tech.ubic.ed</groupId>
-            <artifactId>metrics</artifactId>
-            <version>${metrics.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>com.google.protobuf</groupId>

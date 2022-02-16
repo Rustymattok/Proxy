@@ -1,4 +1,4 @@
-image: gitlab.ubic.tech:4567/docker/maven/master
+image: gitlab.makarov.**:*****/docker/maven/master
 
 #cache:
 #  paths:
@@ -6,10 +6,10 @@ image: gitlab.ubic.tech:4567/docker/maven/master
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2"
-  STAGE_HOST: "sandbox.ubic.tech"
+  STAGE_HOST: "********"
   STAGE_USER: "gitlabdeploy"
   DOCKER_DRIVER: overlay
-  REGISTRY_URL: "gitlab.ubic.tech:4567"
+  REGISTRY_URL: "*****"
   IMAGE_NAME: $REGISTRY_URL/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME
 
 before_script:
@@ -43,9 +43,9 @@ build:
       - target/*.jar
 
 dockerize_master:
-  image: gitlab.ubic.tech:4567/docker/docker:stable
+  image: gitlab.makarov.**:*****/docker/docker:stable
   services:
-    - name: gitlab.ubic.tech:4567/docker/dind/master
+    - name: gitlab.makarov.**:****/docker/dind/master
       alias: docker
   stage: dockerize_master
   only:
@@ -57,9 +57,9 @@ dockerize_master:
     - docker push $IMAGE_NAME:latest
 
 dockerize_tag:
-  image: gitlab.ubic.tech:4567/docker/docker:stable
+  image: gitlab.makarov.**:*****/docker/docker:stable
   services:
-    - name: gitlab.ubic.tech:4567/docker/dind/master
+    - name: gitlab.makarov.**:****/docker/dind/master
       alias: docker
   stage: dockerize_tag
   only:
